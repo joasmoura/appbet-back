@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Regiao extends Model
 {
     use HasFactory;
+    protected $table = 'regioes';
+    protected $fillable = ['nome'];
 }

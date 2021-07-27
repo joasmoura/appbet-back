@@ -21,6 +21,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'username',
+        'perfil',
+        'comissao_faturamento',
+        'comissao_lucro',
+        'regiao_id',
+        'limite_credito',
+        'comissao_id',
+        'supervisor_id',
+        'gerente_id'
     ];
 
     /**

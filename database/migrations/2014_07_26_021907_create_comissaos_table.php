@@ -17,6 +17,7 @@ class CreateComissaosTable extends Migration
             $table->id();
             $table->string('nome');
             $table->unsignedBigInteger('regiao_id');
+            $table->double('valor',10,2);
             $table->timestamps();
 
             $table->foreign('regiao_id')
