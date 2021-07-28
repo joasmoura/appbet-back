@@ -103,6 +103,69 @@ class ExtracaoController extends Controller
         }
     }
 
+    public function hora($id)
+    {
+        $hora = Horarios_Extracao::with('extracao','premios')->find($id);
+        if($hora){
+            $hora->extracao->data = date('d/m/Y',strtotime($hora->extracao->data));
+            return response()->json([
+                'status' => true,
+                'hora' => $hora
+            ],Response::HTTP_OK);
+        }else{
+            return response()->json([
+                'status' => false,
+            ],Response::HTTP_OK);
+        }
+    }
+
+    public function salvarPremios($id, Request $request){
+        $hora = Horarios_Extracao::find($id);
+        if($hora){
+            $premio = $hora->premios()->first();
+            if($premio){
+                $premio->premio_1 = $request->premio_1;
+                $premio->premio_2 = $request->premio_2;
+                $premio->premio_3 = $request->premio_3;
+                $premio->premio_4 = $request->premio_4;
+                $premio->premio_5 = $request->premio_5;
+                $premio->premio_6 = $request->premio_6;
+                $premio->premio_7 = $request->premio_7;
+
+                $salvo = $premio->save();
+            }else{
+                $salvo = $hora->premios()->create([
+                    'premio_1' => $request->premio_1,
+                    'premio_2' => $request->premio_2,
+                    'premio_3' => $request->premio_3,
+                    'premio_4' => $request->premio_4,
+                    'premio_5' => $request->premio_5,
+                    'premio_6' => $request->premio_6,
+                    'premio_7' => $request->premio_7,
+                ]);
+            }
+
+            if($salvo){
+                return response()->json([
+                    'status' => true,
+                ],Response::HTTP_OK);
+
+            }else{
+                return response()->json([
+                    'status' => false,
+                ],Response::HTTP_OK);
+            }
+        }
+    }
+
+    public function setarStatus($id){
+        $extracao = Extracao::find($id);
+        if($extracao){
+            $extracao->status = ($extracao->status ? 0 : 1);
+            $extracao->save();
+        }
+    }
+
     /**
      * Update the specified resource in storage.
      *
@@ -147,7 +210,6 @@ class ExtracaoController extends Controller
                     'status' => false,
                 ],Response::HTTP_OK);
             }
-
         }
     }
 
