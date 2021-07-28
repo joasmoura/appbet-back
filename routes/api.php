@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\ComissaoController;
-use App\Http\Controllers\Painel\RegiaoController;
+use App\Http\Controllers\ExtracaoController;
+use App\Http\Controllers\RegiaoController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,4 +34,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
     Route::resource('/usuarios',UsuarioController::class);
 
     Route::resource('/comissoes',ComissaoController::class);
+
+    Route::resource('/extracoes',ExtracaoController::class);
+
 });
