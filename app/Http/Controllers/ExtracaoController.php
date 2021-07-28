@@ -162,7 +162,17 @@ class ExtracaoController extends Controller
         $extracao = Extracao::find($id);
         if($extracao){
             $extracao->status = ($extracao->status ? 0 : 1);
-            $extracao->save();
+            $salvo = $extracao->save();
+
+            if ($salvo) {
+                return response()->json([
+                    'status' => true,
+                ],Response::HTTP_OK);
+            }else{
+                return response()->json([
+                    'status' => false,
+                ],Response::HTTP_OK);
+            }
         }
     }
 
