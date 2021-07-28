@@ -35,6 +35,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
 
     Route::resource('/comissoes',ComissaoController::class);
 
+    Route::get('/extracoes/removerHora/{id}',[ExtracaoController::class,'removerHora']);
     Route::resource('/extracoes',ExtracaoController::class);
 
 });

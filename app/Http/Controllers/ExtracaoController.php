@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Extracao;
+use App\Models\Horarios_Extracao;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -43,7 +44,7 @@ class ExtracaoController extends Controller
     public function store(Request $request)
     {
         $salvo = Extracao::create([
-            'data' => date('Y-m-d',strtotime($request->data)),
+            'data' => dataParaBanco($request->data),
             'status' => true
         ]);
 
@@ -90,8 +91,7 @@ class ExtracaoController extends Controller
     {
         $extracao = Extracao::with('horas')->find($id);
         if($extracao){
-            // $extracao->data = (!empty($extracao->data) ? date('d/m/Y',strtotime($extracao->data)) : null);
-
+            $extracao->data = date('d/m/Y',strtotime($extracao->data));
             return response()->json([
                 'status' => true,
                 'extracao' => $extracao
@@ -112,7 +112,43 @@ class ExtracaoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $extracao = Extracao::find($id);
+        if($extracao){
+            $extracao->data = dataParaBanco($request->data);
+            $salvo = $extracao->save();
+
+            if($salvo){
+                if(isset($request->horarios)){
+                    foreach($request->horarios as $horario){
+                        if($horario['id'] != ''){
+                            $hora = $extracao->horas()->find($horario['id']);
+                            if($hora){
+                                $hora->nome = $horario['nome'];
+                                $hora->hora = $horario['hora'];
+                                $hora->regiao_id = ($horario['regiao'] ? $horario['regiao']['value'] : null);
+                                $hora->save();
+                            }
+                        }else{
+                            $extracao->horas()->create([
+                                'nome' => $horario['nome'],
+                                'hora' => $horario['hora'],
+                                'regiao_id' => ($horario['regiao'] ? $horario['regiao']['value'] : null)
+                            ]);
+                        }
+                    }
+                }
+
+                return response()->json([
+                    'status' => true,
+                ],Response::HTTP_OK);
+
+            }else{
+                return response()->json([
+                    'status' => false,
+                ],Response::HTTP_OK);
+            }
+
+        }
     }
 
     /**
@@ -124,5 +160,12 @@ class ExtracaoController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function removerHora($id){
+        $hora = Horarios_Extracao::find($id);
+        if($hora){
+            $hora->delete();
+        }
     }
 }
