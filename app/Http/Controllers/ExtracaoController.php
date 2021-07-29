@@ -26,6 +26,23 @@ class ExtracaoController extends Controller
         return $extracoes;
     }
 
+    public function extracoes_cambista(){
+        $user = auth()->user();
+        $regioes = $user->regioes()->get();
+        $extracao = Extracao::where('data',date('Y-m-d'))->where('status',true)->with('horas')->first();
+        $idsRegioes = [];
+
+        if($extracao){
+            if($regioes->first()){
+                foreach($regioes as $regiao){
+                    array_push($idsRegioes, $regiao->id);
+                }
+            }
+
+            $extracao->horas = $extracao->horas()->whereIn('regiao_id',$idsRegioes)->get();
+            return $extracao;
+        }
+    }
     /**
      * Show the form for creating a new resource.
      *

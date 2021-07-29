@@ -10,4 +10,8 @@ class Regiao extends Model
     use HasFactory;
     protected $table = 'regioes';
     protected $fillable = ['nome'];
+
+    public function horarios(){
+        return $this->hasMany(Horarios_Extracao::class,'regiao_id','id');
+    }
 }

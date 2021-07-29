@@ -15,7 +15,7 @@ class UsuarioController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function login(Request $request){
+    public function login($base, Request $request){
         $dados = $request->all();
 
          if(Auth::attempt(['username' => $dados['username'], 'password' => $dados['password']])){
@@ -89,6 +89,10 @@ class UsuarioController extends Controller
         ]);
 
         if($salvo){
+            if($request->regiaoSelecionada){
+                $salvo->regioes()->attach($request->regiaoSelecionada);
+            }
+
             return response()->json([
                 'status' => true,
             ],Response::HTTP_OK);
@@ -118,7 +122,7 @@ class UsuarioController extends Controller
      */
     public function edit($id)
     {
-        $user = User::find($id);
+        $user = User::with('regioes')->find($id);
         if($user){
             return response()->json([
                 'status' => true,
@@ -140,7 +144,7 @@ class UsuarioController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $usuario = User::find($id);
+        $usuario = User::with('regioes')->find($id);
 
         if($usuario){
             $usuario->name = $request->nome;
@@ -164,6 +168,14 @@ class UsuarioController extends Controller
             $salvo = $usuario->save();
 
             if($salvo){
+
+                if($request->regiaoSelecionada){
+                    $usuario->regioes()->detach();
+                    $usuario->regioes()->attach($request->regiaoSelecionada);
+                }else{
+                    $usuario->regioes()->detach();
+                }
+
                 return response()->json([
                     'status' => true,
                 ],Response::HTTP_OK);

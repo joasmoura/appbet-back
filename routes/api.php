@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/login',[UsuarioController::class,'login']);
+Route::post('/login/{base}',[UsuarioController::class,'login']);
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
@@ -35,6 +35,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
 
     Route::resource('/comissoes',ComissaoController::class);
 
+    Route::get('/extracoes/extracoes_cambista',[ExtracaoController::class,'extracoes_cambista']);
     Route::get('/extracoes/setar_status/{id}',[ExtracaoController::class,'setarStatus']);
     Route::post('/extracoes/salvar_premios/{id}',[ExtracaoController::class,'salvarPremios']);
     Route::get('/extracoes/hora/{id}',[ExtracaoController::class,'hora']);
