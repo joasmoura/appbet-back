@@ -20,6 +20,7 @@ class ExtracaoController extends Controller
         if($extracoes->first()){
             foreach($extracoes as $key => $extracao){
                 $extracoes[$key]['data'] = (!empty($extracao->data) ? date('d/m/Y',strtotime($extracao->data)) : null);
+                $extracoes[$key]['status'] = ($extracoes[$key]['status'] == 0 ? null : 1);
             }
         }
         return $extracoes;
