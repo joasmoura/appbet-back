@@ -44,8 +44,6 @@ class ExtracaoController extends Controller
                     array_push($idsRegioes, $regiao->id);
                 }
             }
-
-
             $extracao->horas = $extracao->horas()->whereIn('regiao_id',$idsRegioes)->get();
             return $extracao;
         }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ComissaoController;
 use App\Http\Controllers\ExtracaoController;
+use App\Http\Controllers\MercadoController;
 use App\Http\Controllers\RegiaoController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Http\Request;
@@ -41,5 +42,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
     Route::get('/extracoes/hora/{id}',[ExtracaoController::class,'hora']);
     Route::get('/extracoes/removerHora/{id}',[ExtracaoController::class,'removerHora']);
     Route::resource('/extracoes',ExtracaoController::class);
+
+    Route::resource('/mercados',MercadoController::class);
 
 });
