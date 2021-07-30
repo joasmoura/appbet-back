@@ -18,4 +18,8 @@ class Horarios_Extracao extends Model
     public function premios(){
         return $this->hasOne(Premio::class,'horarios_id','id');
     }
+
+    public function regiao(){
+        return $this->hasOne(Regiao::class,'id','regiao_id');
+    }
 }

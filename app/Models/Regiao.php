@@ -14,4 +14,8 @@ class Regiao extends Model
     public function horarios(){
         return $this->hasMany(Horarios_Extracao::class,'regiao_id','id');
     }
+
+    public function mercado(){
+        return $this->hasOne(Mercado::class);
+    }
 }

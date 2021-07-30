@@ -28,23 +28,34 @@ class ExtracaoController extends Controller
 
     public function extracoes_cambista(){
         $user = auth()->user();
-        $regioes = $user->regioes()->get();
+        $regioes = $user->regioes()->with('horarios')->get();
+
         $extracao = Extracao::where(function($query){
             $data_atual = date('Y-m-d');
             $query->whereDate('data',$data_atual)->get();
             $query->where('status',true)->get();
-
-        })->with('horas')->first();
+        })->first();
         $idsRegioes = [];
+        $mercados = [];
 
-        return $extracao;
         if($extracao){
             if($regioes->first()){
                 foreach($regioes as $regiao){
                     array_push($idsRegioes, $regiao->id);
                 }
             }
-            $extracao->horas = $extracao->horas()->whereIn('regiao_id',$idsRegioes)->get();
+            $horas = $extracao->horas()->with('regiao')->whereIn('regiao_id',$idsRegioes)->get();
+
+            if($horas->first()){
+                foreach($horas as $key => $hora){
+                    $reg = $hora->regiao;
+                    if($reg){
+                        $horas[$key]['mercado'] = $reg->mercado;
+                    }
+                }
+            }
+            $extracao->horas = $horas;
+
             return $extracao;
         }
     }
