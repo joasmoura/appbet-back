@@ -13,6 +13,7 @@ class Mercado extends Model
     'grupo', 'dezena', 'centena', 'milhar', 'duque_grupo',
     'terno_grupo', 'terno_dezena', 'milhar_centena',
     'milhar_invertida', 'mc_invertida', 'centena_invertida',
-    'terno_duque', 'duque_dezena', 'passe_combinado',
-    'terno_duque_combinado', 'passe_seco'];
+    'duque_dezena', 'passe_combinado',
+    'terno_grupo_combinado', 'passe_seco', 'terno_dezena_cercado',
+    'grupo_combinado','passe_vai_vem','passe_vai'];
 }

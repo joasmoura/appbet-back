@@ -27,11 +27,14 @@ class CreateMercadosTable extends Migration
             $table->string('milhar_invertida');
             $table->string('mc_invertida');
             $table->string('centena_invertida');
-            $table->string('terno_duque');
             $table->string('duque_dezena');
             $table->string('passe_combinado');
-            $table->string('terno_duque_combinado');
+            $table->string('terno_grupo_combinado');
             $table->string('passe_seco');
+            $table->string('passe_vai');
+            $table->string('passe_vai_vem');
+            $table->string('grupo_combinado');
+            $table->string('terno_dezena_cercado');
             $table->timestamps();
 
             $table->foreign('regiao_id')

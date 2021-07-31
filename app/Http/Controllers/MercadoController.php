@@ -50,11 +50,14 @@ class MercadoController extends Controller
             'milhar_invertida' => $mercado['milhar_invertida'],
             'mc_invertida' => $mercado['mc_invertida'],
             'centena_invertida' => $mercado['centena_invertida'],
-            'terno_duque' => $mercado['terno_duque'],
             'duque_dezena' => $mercado['duque_dezena'],
             'passe_combinado' => $mercado['passe_combinado'],
-            'terno_duque_combinado' => $mercado['terno_duque_combinado'],
-            'passe_seco' => $mercado['passe_seco']
+            'terno_grupo_combinado' => $mercado['terno_grupo_combinado'],
+            'passe_seco' => $mercado['passe_seco'],
+            'terno_dezena_cercado' => $mercado['terno_dezena_cercado'],
+            'grupo_combinado' => $mercado['grupo_combinado'],
+            'passe_vai_vem' => $mercado['passe_vai_vem'],
+            'passe_vai' => $mercado['passe_vai'],
         ]);
 
         if ($salvo) {
@@ -116,11 +119,14 @@ class MercadoController extends Controller
             $dados->milhar_invertida = $mercado['milhar_invertida'];
             $dados->mc_invertida = $mercado['mc_invertida'];
             $dados->centena_invertida = $mercado['centena_invertida'];
-            $dados->terno_duque = $mercado['terno_duque'];
             $dados->duque_dezena = $mercado['duque_dezena'];
             $dados->passe_combinado = $mercado['passe_combinado'];
-            $dados->terno_duque_combinado = $mercado['terno_duque_combinado'];
+            $dados->terno_grupo_combinado = $mercado['terno_grupo_combinado'];
             $dados->passe_seco = $mercado['passe_seco'];
+            $dados->terno_dezena_cercado = $mercado['terno_dezena_cercado'];
+            $dados->grupo_combinado = $mercado['grupo_combinado'];
+            $dados->passe_vai_vem = $mercado['passe_vai_vem'];
+            $dados->passe_vai = $mercado['passe_vai'];
 
             $salvo = $dados->save();
 

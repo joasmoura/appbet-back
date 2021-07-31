@@ -33,6 +33,13 @@ class UsuarioController extends Controller
          }
     }
 
+    public function limite(){
+        $usuario = auth()->user();
+        $limite = $usuario->limite_credito;
+
+        return $limite;
+    }
+
     public function index()
     {
         //

@@ -28,6 +28,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::middleware('auth:api')->prefix('painel')->group(function(){
     Route::resource('/regioes',RegiaoController::class);
 
+    Route::get('/usuario/limite',[UsuarioController::class,'limite']);
     Route::get('/usuarios/gerentes',[UsuarioController::class,'gerentes']);
     Route::get('/usuarios/supervisores',[UsuarioController::class,'supervisores']);
     Route::get('/usuarios/cambistas',[UsuarioController::class,'cambistas']);
