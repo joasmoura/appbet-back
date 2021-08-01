@@ -46,17 +46,17 @@ class UsuarioController extends Controller
     }
 
     public function gerentes(){
-        $gerentes = User::where('perfil','gerente')->get();
+        $gerentes = User::with('regiao')->where('perfil','gerente')->get();
         return $gerentes;
     }
 
     public function supervisores(){
-        $gerentes = User::where('perfil','supervisor')->get();
+        $gerentes = User::with('regiao')->where('perfil','supervisor')->get();
         return $gerentes;
     }
 
     public function cambistas(){
-        $cambista = User::where('perfil','cambista')->get();
+        $cambista = User::with('comissao','gerente')->where('perfil','cambista')->get();
         return $cambista;
     }
 

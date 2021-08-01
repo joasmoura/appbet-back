@@ -29,7 +29,8 @@ class User extends Authenticatable
         'limite_credito',
         'comissao_id',
         'supervisor_id',
-        'gerente_id'
+        'gerente_id',
+        'telefone'
     ];
 
     /**
@@ -53,5 +54,17 @@ class User extends Authenticatable
 
     public function regioes(){
         return $this->belongsToMany(Regiao::class);
+    }
+
+    public function regiao(){
+        return $this->hasOne(Regiao::class,'id','regiao_id');
+    }
+
+    public function comissao(){
+        return $this->hasOne(Comissao::class,'id','comissao_id');
+    }
+
+    public function gerente(){
+        return $this->hasOne(User::class,'id','gerente_id');
     }
 }
