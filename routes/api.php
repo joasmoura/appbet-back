@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApostaController;
 use App\Http\Controllers\ComissaoController;
 use App\Http\Controllers\ExtracaoController;
 use App\Http\Controllers\MercadoController;
@@ -45,5 +46,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
     Route::resource('/extracoes',ExtracaoController::class);
 
     Route::resource('/mercados',MercadoController::class);
+
+    Route::resource('/apostas',ApostaController::class);
 
 });

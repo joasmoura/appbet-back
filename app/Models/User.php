@@ -67,4 +67,8 @@ class User extends Authenticatable
     public function gerente(){
         return $this->hasOne(User::class,'id','gerente_id');
     }
+
+    public function apostas(){
+        return $this->hasMany(Aposta::class,'user_id','id');
+    }
 }
