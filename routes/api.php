@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApostaController;
+use App\Http\Controllers\CaixaController;
 use App\Http\Controllers\ComissaoController;
 use App\Http\Controllers\ExtracaoController;
 use App\Http\Controllers\MercadoController;
@@ -57,4 +58,8 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
 
     Route::resource('/movimentacao',MovimentacaoController::class);
 
+    Route::get('/caixa/caixa_gerentes',[CaixaController::class,'caixa_gerentes']);
+    Route::get('/caixa/caixa_supervisores',[CaixaController::class,'caixa_supervisores']);
+    Route::get('/caixa/caixa_cambistas',[CaixaController::class,'caixa_cambistas']);
+    Route::resource('/caixa',CaixaController::class);
 });
