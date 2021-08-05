@@ -15,7 +15,7 @@ class MovimentacaoController extends Controller
      */
     public function index(Request $request)
     {
-        $movimentacoes = Movimentacao::with('cambista')->get();
+        $movimentacoes = Movimentacao::with('usuario')->get();
 
         if($movimentacoes->first()){
             foreach($movimentacoes as $key => $movimentacao){
@@ -45,9 +45,10 @@ class MovimentacaoController extends Controller
     public function store(Request $request)
     {
         $salvo = Movimentacao::create([
-            'user_id' => $request->cambista,
+            'user_id' => $request->usuario,
             'descricao' => $request->descricao,
             'valor' => $request->valor,
+            'tipo' => $request->tipo,
             'data' => date('Y-m-d',strtotime($request->data))
         ]);
 
@@ -81,7 +82,7 @@ class MovimentacaoController extends Controller
      */
     public function edit($id)
     {
-        $movimentacao = Movimentacao::with('cambista')->find($id);
+        $movimentacao = Movimentacao::with('usuario')->find($id);
 
         if($movimentacao){
             $movimentacao['data'] = date('d/m/Y',strtotime($movimentacao->data));
@@ -105,6 +106,7 @@ class MovimentacaoController extends Controller
             $movimentacao->user_id = $request->cambista;
             $movimentacao->descricao = $request->descricao;
             $movimentacao->valor = $request->valor;
+            $movimentacao->tipo = $request->tipo;
             $movimentacao->data = date('Y-m-d',strtotime($request->data));
 
             $salvo = $movimentacao->save();

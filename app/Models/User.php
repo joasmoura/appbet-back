@@ -71,4 +71,8 @@ class User extends Authenticatable
     public function apostas(){
         return $this->hasMany(Aposta::class,'user_id','id');
     }
+
+    public function movimentacoes(){
+        return $this->hasMany(Movimentacao::class,'user_id','id');
+    }
 }

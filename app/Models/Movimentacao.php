@@ -11,7 +11,7 @@ class Movimentacao extends Model
     protected $table = 'movimentacoes';
     protected $fillable = ['user_id','descricao','tipo','data','valor'];
 
-    public function cambista(){
+    public function usuario(){
         return $this->hasOne(User::class,'id','user_id');
     }
 }
