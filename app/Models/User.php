@@ -75,4 +75,13 @@ class User extends Authenticatable
     public function movimentacoes(){
         return $this->hasMany(Movimentacao::class,'user_id','id');
     }
+
+    public function cambistas_gerente(){
+        return $this->hasMany(User::class, 'gerente_id', 'id');
+    }
+
+
+    public function cambistas_supervisor(){
+        return $this->hasMany(User::class, 'supervisor_id', 'id');
+    }
 }

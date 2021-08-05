@@ -18,14 +18,25 @@ class CaixaController extends Controller
     }
 
     public function caixa_gerentes(Request $request){
-        $gerentes = User::with('movimentacoes')->where('perfil','gerente')->get();
+        $gerentes = User::with('movimentacoes','cambistas_gerente')->where('perfil','gerente')->get();
 
         if($gerentes->first()){
             foreach($gerentes as $key => $gerente){
                 $creditos = $gerente->movimentacoes()->where('tipo','credito')->sum('valor');
                 $retiradas = $gerente->movimentacoes()->where('tipo','retirada')->sum('valor');
+
+                $cambistas = $gerente->cambistas_gerente()->get();
+                $entradas = 0;
+
+                if($cambistas->first()){
+                    foreach($cambistas as $cambista){
+                        $entradas += (float) $cambista->apostas()->sum('total');
+                    }
+                }
+
                 $gerentes[$key]['creditos'] = $creditos;
                 $gerentes[$key]['retiradas'] = $retiradas;
+                $gerentes[$key]['entradas'] = $entradas;
             }
         }
 
@@ -33,26 +44,42 @@ class CaixaController extends Controller
     }
 
     public function caixa_supervisores(Request $request){
-        $supervisores = User::where('perfil','supervisor')->get();
+        $supervisores = User::where('perfil','supervisor','cambistas_supervisor')->get();
         if($supervisores->first()){
             foreach($supervisores as $key => $supervisor){
                 $creditos = $supervisor->movimentacoes()->where('tipo','credito')->sum('valor');
                 $retiradas = $supervisor->movimentacoes()->where('tipo','retirada')->sum('valor');
+
+                $cambistas = $supervisor->cambistas_supervisor()->get();
+                $entradas = 0;
+
+                if($cambistas->first()){
+                    foreach($cambistas as $cambista){
+                        $entradas += (float) $cambista->apostas()->sum('total');
+                    }
+                }
+
                 $supervisores[$key]['creditos'] = $creditos;
                 $supervisores[$key]['retiradas'] = $retiradas;
+                $supervisores[$key]['entradas'] = $entradas;
             }
         }
         return $supervisores;
     }
 
     public function caixa_cambistas(Request $request){
-        $cambistas = User::where('perfil','cambista')->get();
+        $cambistas = User::where('perfil','cambista','apostas')->get();
         if($cambistas->first()){
+            $entradas = 0;
             foreach($cambistas as $key => $cambista){
                 $creditos = $cambista->movimentacoes()->where('tipo','credito')->sum('valor');
                 $retiradas = $cambista->movimentacoes()->where('tipo','retirada')->sum('valor');
+
+                $entradas = (float) $cambista->apostas()->sum('total');
+
                 $cambistas[$key]['creditos'] = $creditos;
                 $cambistas[$key]['retiradas'] = $retiradas;
+                $cambistas[$key]['entradas'] = $entradas;
             }
         }
         return $cambistas;
