@@ -4,7 +4,9 @@ use App\Http\Controllers\ApostaController;
 use App\Http\Controllers\ComissaoController;
 use App\Http\Controllers\ExtracaoController;
 use App\Http\Controllers\MercadoController;
+use App\Http\Controllers\MovimentacaoController;
 use App\Http\Controllers\RegiaoController;
+use App\Http\Controllers\ResultadoController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,11 +35,13 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
     Route::get('/usuarios/gerentes',[UsuarioController::class,'gerentes']);
     Route::get('/usuarios/supervisores',[UsuarioController::class,'supervisores']);
     Route::get('/usuarios/cambistas',[UsuarioController::class,'cambistas']);
+    Route::get('/usuarios/selectCambistas',[UsuarioController::class,'selectCambistas']);
 
     Route::resource('/usuarios',UsuarioController::class);
 
     Route::resource('/comissoes',ComissaoController::class);
 
+    Route::post('/extracoes/consultar_resultado',[ExtracaoController::class,'consultarResultado']);
     Route::get('/extracoes/extracoes_cambista',[ExtracaoController::class,'extracoes_cambista']);
     Route::get('/extracoes/setar_status/{id}',[ExtracaoController::class,'setarStatus']);
     Route::post('/extracoes/salvar_premios/{id}',[ExtracaoController::class,'salvarPremios']);
@@ -48,5 +52,9 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
     Route::resource('/mercados',MercadoController::class);
 
     Route::resource('/apostas',ApostaController::class);
+
+    Route::resource('/resultados',ResultadoController::class);
+
+    Route::resource('/movimentacao',MovimentacaoController::class);
 
 });

@@ -60,6 +60,11 @@ class UsuarioController extends Controller
         return $cambista;
     }
 
+    public function selectCambistas(){
+        $cambista = User::where('perfil','cambista')->get();
+        return $cambista;
+    }
+
     /**
      * Show the form for creating a new resource.
      *

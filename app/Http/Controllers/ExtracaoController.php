@@ -36,7 +36,6 @@ class ExtracaoController extends Controller
             $query->where('status',true)->get();
         })->first();
         $idsRegioes = [];
-        $mercados = [];
 
         if($extracao){
             if($regioes->first()){
@@ -272,6 +271,34 @@ class ExtracaoController extends Controller
         $hora = Horarios_Extracao::find($id);
         if($hora){
             $hora->delete();
+        }
+    }
+
+    public function consultarResultado(Request $request){
+        $data = $request->data;
+
+        if(!empty($data)){
+            $usuario = auth()->user();
+            $data = date('Y-m-d',strtotime($data));
+            $regioes = $usuario->regioes()->with('horarios')->get();
+
+            $extracao = Extracao::where(function($query) use($data) {
+                $query->whereDate('data',$data)->get();
+                $query->where('status',true)->get();
+            })->first();
+            $idsRegioes = [];
+
+            if($extracao){
+                if($regioes->first()){
+                    foreach($regioes as $regiao){
+                        array_push($idsRegioes, $regiao->id);
+                    }
+                }
+                $horas = $extracao->horas()->with('premios')->whereIn('regiao_id',$idsRegioes)->get();
+                $extracao->horas = $horas;
+            }
+
+            return $extracao;
         }
     }
 }
