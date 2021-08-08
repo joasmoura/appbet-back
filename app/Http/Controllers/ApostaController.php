@@ -32,7 +32,7 @@ class ApostaController extends Controller
      */
     public function index(Request $request)
     {
-        $apostas = Aposta::with('itens','cambista')->get();
+        $apostas = Aposta::with('itens','cambista')->paginate(10);
 
         if($apostas->first()){
             foreach($apostas as $key => $aposta){
