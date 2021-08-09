@@ -52,6 +52,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
 
     Route::resource('/mercados',MercadoController::class);
 
+    Route::get('/apostas/cancelar_aposta/{id}',[ApostaController::class,'cancelar_aposta']);
     Route::resource('/apostas',ApostaController::class);
 
     Route::resource('/resultados',ResultadoController::class);

@@ -149,4 +149,22 @@ class ApostaController extends Controller
     {
         //
     }
+
+    public function cancelar_aposta($id){
+        $aposta = Aposta::find($id);
+        if($aposta){
+            $aposta->status = 'cancelado';
+
+            $salvo = $aposta->save();
+            if($salvo){
+                return response()->json([
+                    'status' => true,
+                ],Response::HTTP_OK);
+            }else{
+                return response()->json([
+                    'status' => false,
+                ],Response::HTTP_OK);
+            }
+        }
+    }
 }
