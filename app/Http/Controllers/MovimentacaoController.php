@@ -15,7 +15,7 @@ class MovimentacaoController extends Controller
      */
     public function index(Request $request)
     {
-        $movimentacoes = Movimentacao::with('usuario')->paginate(10);
+        $movimentacoes = Movimentacao::with('usuario')->orderBy('created_at','desc')->paginate(10);
 
         if($movimentacoes->first()){
             foreach($movimentacoes as $key => $movimentacao){

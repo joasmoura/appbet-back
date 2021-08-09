@@ -14,9 +14,9 @@ class ExtracaoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $extracoes = Extracao::with('horas')->get();
+        $extracoes = Extracao::with('horas')->orderBy('created_at','desc')->paginate(10);
         if($extracoes->first()){
             foreach($extracoes as $key => $extracao){
                 $extracoes[$key]['data'] = (!empty($extracao->data) ? date('d/m/Y',strtotime($extracao->data)) : null);

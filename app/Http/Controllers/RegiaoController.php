@@ -16,7 +16,7 @@ class RegiaoController extends Controller
      */
     public function index()
     {
-        $regioes = Regiao::get();
+        $regioes = Regiao::paginate(10);
         return $regioes;
     }
 

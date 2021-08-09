@@ -15,7 +15,7 @@ class ComissaoController extends Controller
      */
     public function index()
     {
-        $comissoes = Comissao::get();
+        $comissoes = Comissao::paginate(10);
         return $comissoes;
     }
 

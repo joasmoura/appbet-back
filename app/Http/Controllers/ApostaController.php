@@ -32,12 +32,11 @@ class ApostaController extends Controller
      */
     public function index(Request $request)
     {
-        $apostas = Aposta::with('itens','cambista')->paginate(10);
+        $apostas = Aposta::with('itens','cambista')->orderBy('created_at','desc')->paginate(10);
 
         if($apostas->first()){
             foreach($apostas as $key => $aposta){
                 $apostas[$key]['horario'] = $aposta->horario;
-
                 $extracao = $aposta->horario->extracao;
 
                 if($extracao){
@@ -48,7 +47,6 @@ class ApostaController extends Controller
                 $apostas[$key]['hora'] = date('d/m/Y H:i',strtotime($aposta->created_at));
             }
         }
-
         return $apostas;
     }
 
