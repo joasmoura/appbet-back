@@ -19,6 +19,12 @@ class ComissaoController extends Controller
         return $comissoes;
     }
 
+    public function select()
+    {
+        $comissoes = Comissao::get();
+        return $comissoes;
+    }
+
     /**
      * Show the form for creating a new resource.
      *

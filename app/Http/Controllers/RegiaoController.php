@@ -19,6 +19,11 @@ class RegiaoController extends Controller
         $regioes = Regiao::paginate(10);
         return $regioes;
     }
+    public function select()
+    {
+        $regioes = Regiao::get();
+        return $regioes;
+    }
 
     /**
      * Show the form for creating a new resource.

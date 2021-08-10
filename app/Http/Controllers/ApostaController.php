@@ -72,7 +72,7 @@ class ApostaController extends Controller
         $dados = $dados['dados'];
 
         $usuario = auth()->user();
-
+        $comissao = $usuario->comissao;
         $salvo = $usuario->apostas()->create([
             'horario_id' => $dados['id'],
             'codigo' => $this->gerar_codigo(),
@@ -80,6 +80,7 @@ class ApostaController extends Controller
             'status' => 'aberto'
         ]);
 
+        // $salvo = true;
         if($salvo){
             if($dados['itens']){
                 foreach($dados['itens'] as $item){
@@ -92,6 +93,23 @@ class ApostaController extends Controller
                         'premio_de' => (int) $item['premios']['de'],
                         'premio_ate' => (int) $item['premios']['ate'],
                     ]);
+
+                    if($comissao){
+                        $valor = ((float) $item['valor'] * (float) $comissao->valor)/100;
+                        $usuario->comissao_aposta()->create([
+                            'valor' => $valor
+                        ]);
+                    }
+
+                    $gerente = $usuario->gerente;
+                    if($gerente){
+                        $valor = ((float) $item['valor'] * (float) $gerente->comissao_faturamento)/100;
+                        $gerente->comissao_aposta()->create([
+                            'valor' => $valor
+                        ]);
+                    }
+
+
                 }
             }
 

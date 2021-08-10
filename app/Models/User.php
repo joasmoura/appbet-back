@@ -80,8 +80,11 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'gerente_id', 'id');
     }
 
-
     public function cambistas_supervisor(){
         return $this->hasMany(User::class, 'supervisor_id', 'id');
+    }
+
+    public function comissao_aposta(){
+        return $this->hasMany(ComissoesAposta::class,'user_id','id');
     }
 }

@@ -50,13 +50,28 @@ class UsuarioController extends Controller
         return $gerentes;
     }
 
+    public function gerentes_select(){
+        $gerentes = User::with('regiao')->where('perfil','gerente')->get();
+        return $gerentes;
+    }
+
     public function supervisores(){
         $gerentes = User::with('regiao')->where('perfil','supervisor')->paginate(10);
         return $gerentes;
     }
 
+    public function supervisores_select(){
+        $gerentes = User::with('regiao')->where('perfil','supervisor')->get();
+        return $gerentes;
+    }
+
     public function cambistas(){
         $cambista = User::with('comissao','gerente')->where('perfil','cambista')->paginate(10);
+        return $cambista;
+    }
+
+    public function cambistas_select(){
+        $cambista = User::with('comissao','gerente')->where('perfil','cambista')->get();
         return $cambista;
     }
 

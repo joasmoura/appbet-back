@@ -22,4 +22,5 @@ class Aposta extends Model
     public function horario(){
         return $this->hasOne(Horarios_Extracao::class,'id','horario_id');
     }
+
 }

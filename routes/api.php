@@ -30,16 +30,21 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware('auth:api')->prefix('painel')->group(function(){
+    Route::get('/regioes/select',[RegiaoController::class,'select']);
     Route::resource('/regioes',RegiaoController::class);
 
     Route::get('/usuario/limite',[UsuarioController::class,'limite']);
+    Route::get('/usuarios/gerentes_select',[UsuarioController::class,'gerentes_select']);
     Route::get('/usuarios/gerentes',[UsuarioController::class,'gerentes']);
+    Route::get('/usuarios/supervisores_select',[UsuarioController::class,'supervisores_select']);
     Route::get('/usuarios/supervisores',[UsuarioController::class,'supervisores']);
+    Route::get('/usuarios/cambistas_select',[UsuarioController::class,'cambistas_select']);
     Route::get('/usuarios/cambistas',[UsuarioController::class,'cambistas']);
     Route::get('/usuarios/selectCambistas',[UsuarioController::class,'selectCambistas']);
 
     Route::resource('/usuarios',UsuarioController::class);
 
+    Route::get('/comissoes/select',[ComissaoController::class,'select']);
     Route::resource('/comissoes',ComissaoController::class);
 
     Route::post('/extracoes/consultar_resultado',[ExtracaoController::class,'consultarResultado']);

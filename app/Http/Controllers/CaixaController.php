@@ -18,7 +18,7 @@ class CaixaController extends Controller
     }
 
     public function caixa_gerentes(Request $request){
-        $gerentes = User::with('movimentacoes','cambistas_gerente')->where('perfil','gerente')->paginate(10);
+        $gerentes = User::with('movimentacoes','cambistas_gerente','comissao_aposta')->where('perfil','gerente')->paginate(10);
 
         if($gerentes->first()){
             foreach($gerentes as $key => $gerente){
@@ -37,6 +37,7 @@ class CaixaController extends Controller
                 $gerentes[$key]['creditos'] = $creditos;
                 $gerentes[$key]['retiradas'] = $retiradas;
                 $gerentes[$key]['entradas'] = $entradas;
+                $gerentes[$key]['saidas'] = (float) $gerente->comissao_aposta()->sum('valor');
             }
         }
         return $gerentes;
@@ -67,7 +68,7 @@ class CaixaController extends Controller
     }
 
     public function caixa_cambistas(Request $request){
-        $cambistas = User::where('perfil','cambista','apostas')->paginate(10);
+        $cambistas = User::with('comissao_aposta','apostas')->where('perfil','cambista')->paginate(10);
         if($cambistas->first()){
             $entradas = 0;
             foreach($cambistas as $key => $cambista){
@@ -79,6 +80,7 @@ class CaixaController extends Controller
                 $cambistas[$key]['creditos'] = $creditos;
                 $cambistas[$key]['retiradas'] = $retiradas;
                 $cambistas[$key]['entradas'] = $entradas;
+                $cambistas[$key]['saidas'] = (float) $cambista->comissao_aposta()->sum('valor');
             }
         }
         return $cambistas;
