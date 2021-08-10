@@ -167,15 +167,17 @@ class ExtracaoController extends Controller
 
                 $salvo = $premio->save();
             }else{
-                $salvo = $hora->premios()->create([
-                    'premio_1' => $request->premio_1,
-                    'premio_2' => $request->premio_2,
-                    'premio_3' => $request->premio_3,
-                    'premio_4' => $request->premio_4,
-                    'premio_5' => $request->premio_5,
-                    'premio_6' => $request->premio_6,
-                    'premio_7' => $request->premio_7,
-                ]);
+                // $salvo = $hora->premios()->create([
+                //     'premio_1' => $request->premio_1,
+                //     'premio_2' => $request->premio_2,
+                //     'premio_3' => $request->premio_3,
+                //     'premio_4' => $request->premio_4,
+                //     'premio_5' => $request->premio_5,
+                //     'premio_6' => $request->premio_6,
+                //     'premio_7' => $request->premio_7,
+                // ]);
+
+
             }
 
             if($salvo){
@@ -189,6 +191,10 @@ class ExtracaoController extends Controller
                 ],Response::HTTP_OK);
             }
         }
+    }
+
+    public function verifica_ganhadores(){
+
     }
 
     public function setarStatus($id){

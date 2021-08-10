@@ -56,9 +56,6 @@ class MercadoController extends Controller
             'passe_seco' => $mercado['passe_seco'],
             'terno_dezena_cercado' => $mercado['terno_dezena_cercado'],
             'grupo_combinado' => $mercado['grupo_combinado'],
-            'passe_vai_vem' => $mercado['passe_vai_vem'],
-            'passe_vai' => $mercado['passe_vai'],
-        ]);
 
         if ($salvo) {
             return response()->json([
@@ -125,8 +122,6 @@ class MercadoController extends Controller
             $dados->passe_seco = $mercado['passe_seco'];
             $dados->terno_dezena_cercado = $mercado['terno_dezena_cercado'];
             $dados->grupo_combinado = $mercado['grupo_combinado'];
-            $dados->passe_vai_vem = $mercado['passe_vai_vem'];
-            $dados->passe_vai = $mercado['passe_vai'];
 
             $salvo = $dados->save();
 

@@ -31,8 +31,6 @@ class CreateMercadosTable extends Migration
             $table->string('passe_combinado');
             $table->string('terno_grupo_combinado');
             $table->string('passe_seco');
-            $table->string('passe_vai');
-            $table->string('passe_vai_vem');
             $table->string('grupo_combinado');
             $table->string('terno_dezena_cercado');
             $table->timestamps();
