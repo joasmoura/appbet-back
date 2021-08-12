@@ -47,6 +47,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
     Route::get('/comissoes/select',[ComissaoController::class,'select']);
     Route::resource('/comissoes',ComissaoController::class);
 
+    Route::post('/extracoes/bilhetes',[ExtracaoController::class,'bilhetes']);
     Route::post('/extracoes/consultar_resultado',[ExtracaoController::class,'consultarResultado']);
     Route::get('/extracoes/extracoes_cambista',[ExtracaoController::class,'extracoes_cambista']);
     Route::get('/extracoes/setar_status/{id}',[ExtracaoController::class,'setarStatus']);

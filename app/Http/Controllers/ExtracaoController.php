@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Aposta;
 use App\Models\Extracao;
 use App\Models\Horarios_Extracao;
+use App\Models\Sorteados;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -24,6 +26,37 @@ class ExtracaoController extends Controller
             }
         }
         return $extracoes;
+    }
+
+    public function bilhetes(Request $request){
+        $dados = $request->all();
+        $dados = $dados['dados'];
+
+        $codigo = $dados['codigo'];
+        $de = date('Y-m-d',strtotime($dados['dataInicio']));
+        $fim = date('Y-m-d',strtotime($dados['dataFim']));
+
+        $usuario = auth()->user();
+
+        $apostas = $usuario->apostas()->with('itens','horario','cambista')->where(function($query) use($codigo, $de, $fim) {
+            $query->where('status','!=', 'cancelado');
+            $query->whereDate('created_at', '>=',$de);
+            $query->whereDate('created_at', '<=',$fim);
+            $query->where('codigo','like','%'.$codigo.'%');
+        })->get();
+
+        if($apostas->first()){
+            foreach($apostas as $key => $aposta){
+                $itens = $aposta->itens()->get();
+                if($itens->first()){
+                    foreach($itens as $keyItem => $item){
+                        $apostas[$key]['itens'][$keyItem]['sorteado'] = $item->sorteados;
+                    }
+                }
+            }
+        }
+
+        return $apostas;
     }
 
     public function extracoes_cambista(){
@@ -154,7 +187,95 @@ class ExtracaoController extends Controller
 
     public function salvarPremios($id, Request $request){
         $hora = Horarios_Extracao::find($id);
+
         if($hora){
+            $apostas = $hora->apostas()->with('itens')->get();
+            $sorteados = [];
+            $sorteios_iguais = [];
+
+            if($apostas->first()){
+                foreach($apostas as $aposta){
+                    $itens = $aposta->itens;
+                    $aposta_sorteada = false;
+
+                    foreach($itens as $item){
+                        $de = $item->premio_de;
+                        $ate = $item->premio_ate;
+                        $numero = json_decode($item->numero,true);
+
+                        foreach($numero as $n){
+                            for($i = $de; $i <= $ate; $i++){
+                                if($i == 1 && $n == $request->premio_1){
+                                    $aposta_sorteada = true;
+                                    array_push($sorteados, [
+                                        'item_aposta_id' => $item->id,
+                                        'numero_premio' => (int) $i,
+                                        'numero_sorteado' => (int) $n,
+                                        'valor' => $item->poss_ganho
+                                    ]);
+                                } elseif($i == 2 && $n == $request->premio_2){
+                                    $aposta_sorteada = true;
+                                    array_push($sorteados, [
+                                        'item_aposta_id' => $item->id,
+                                        'numero_premio' => (int) $i,
+                                        'numero_sorteado' => (int) $n,
+                                        'valor' => $item->poss_ganho
+                                    ]);
+                                } elseif($i == 3 && $n == $request->premio_3){
+                                    $aposta_sorteada = true;
+                                    array_push($sorteados, [
+                                        'item_aposta_id' => $item->id,
+                                        'numero_premio' => (int) $i,
+                                        'numero_sorteado' => (int) $n,
+                                        'valor' => $item->poss_ganho
+                                    ]);
+                                } elseif($i == 4 && $n == $request->premio_4){
+                                    $aposta_sorteada = true;
+                                    array_push($sorteados, [
+                                        'item_aposta_id' => $item->id,
+                                        'numero_premio' => (int) $i,
+                                        'numero_sorteado' => (int) $n,
+                                        'valor' => $item->poss_ganho
+                                    ]);
+                                } elseif($i == 5 && $n == $request->premio_5){
+                                    $aposta_sorteada = true;
+                                    array_push($sorteados, [
+                                        'item_aposta_id' => $item->id,
+                                        'numero_premio' => (int) $i,
+                                        'numero_sorteado' => (int) $n,
+                                        'valor' => $item->poss_ganho
+                                    ]);
+                                } elseif($i == 6 && $n == $request->premio_6){
+                                    $aposta_sorteada = true;
+                                    array_push($sorteados, [
+                                        'item_aposta_id' => $item->id,
+                                        'numero_premio' => (int) $i,
+                                        'numero_sorteado' => (int) $n,
+                                        'valor' => $item->poss_ganho
+                                    ]);
+                                } elseif($i == 7 && $n == $request->premio_7){
+                                    $aposta_sorteada = true;
+                                    array_push($sorteados, [
+                                        'item_aposta_id' => $item->id,
+                                        'numero_premio' => (int) $i,
+                                        'numero_sorteado' => (int) $n,
+                                        'valor' => $item->poss_ganho
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+
+                    if($aposta_sorteada){
+                        $aposta->status = 'ganhou';
+                    }else{
+                        $aposta->status = 'perdeu';
+                    }
+
+                    $aposta->save();
+                }
+            }
+
             $premio = $hora->premios()->first();
             if($premio){
                 $premio->premio_1 = $request->premio_1;
@@ -166,6 +287,15 @@ class ExtracaoController extends Controller
                 $premio->premio_7 = $request->premio_7;
 
                 $salvo = $premio->save();
+
+                if($salvo){
+                    if(!empty($sorteados)){
+                        $premio->sorteados()->delete();
+                        foreach($sorteados as $sorteado){
+                            $premio->sorteados()->create($sorteado);
+                        }
+                    }
+                }
             }else{
                 $salvo = $hora->premios()->create([
                     'premio_1' => $request->premio_1,
@@ -176,6 +306,14 @@ class ExtracaoController extends Controller
                     'premio_6' => $request->premio_6,
                     'premio_7' => $request->premio_7,
                 ]);
+
+                if($salvo){
+                    if(!empty($sorteados)){
+                        foreach($sorteados as $sorteado){
+                            $salvo->sorteados()->create($sorteado);
+                        }
+                    }
+                }
             }
 
             if($salvo){

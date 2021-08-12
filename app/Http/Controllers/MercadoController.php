@@ -55,7 +55,8 @@ class MercadoController extends Controller
             'terno_grupo_combinado' => $mercado['terno_grupo_combinado'],
             'passe_seco' => $mercado['passe_seco'],
             'terno_dezena_cercado' => $mercado['terno_dezena_cercado'],
-            'grupo_combinado' => $mercado['grupo_combinado'],
+            'grupo_combinado' => $mercado['grupo_combinado']
+        ]);
 
         if ($salvo) {
             return response()->json([

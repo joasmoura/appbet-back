@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateGanhadoresTable extends Migration
+class CreateSorteadosTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,18 +15,20 @@ class CreateGanhadoresTable extends Migration
     {
         Schema::create('sorteados', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('resultado_id');
+            $table->unsignedBigInteger('item_aposta_id');
+            $table->integer('numero_premio');
+            $table->integer('numero_sorteado');
             $table->double('valor',10,2);
             $table->timestamps();
 
-            $table->foreign('user_id')
-            ->references('user_id')
-            ->on('users');
-
             $table->foreign('resultado_id')
-            ->references('resultados')
-            ->on('resultados');
+            ->references('id')
+            ->on('premios_horarios');
+
+            $table->foreign('item_aposta_id')
+            ->references('id')
+            ->on('itens_apostas');
         });
     }
 
@@ -37,6 +39,6 @@ class CreateGanhadoresTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ganhadores');
+        Schema::dropIfExists('sorteados');
     }
 }

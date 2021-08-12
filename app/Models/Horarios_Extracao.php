@@ -22,4 +22,8 @@ class Horarios_Extracao extends Model
     public function regiao(){
         return $this->hasOne(Regiao::class,'id','regiao_id');
     }
+
+    public function apostas(){
+        return $this->hasMany(Aposta::class,'horario_id','id');
+    }
 }
