@@ -9,7 +9,7 @@ class Aposta extends Model
 {
     use HasFactory;
     protected $table = 'apostas';
-    protected $fillable = ['horario_id','codigo','user_id','total','status'];
+    protected $fillable = ['horario_id','codigo','user_id','total','status','tel_apostador'];
 
     public function itens(){
         return $this->hasMany(ItensAposta::class,'aposta_id','id');

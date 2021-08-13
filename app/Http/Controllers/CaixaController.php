@@ -80,7 +80,20 @@ class CaixaController extends Controller
                 $cambistas[$key]['creditos'] = $creditos;
                 $cambistas[$key]['retiradas'] = $retiradas;
                 $cambistas[$key]['entradas'] = $entradas;
-                $cambistas[$key]['saidas'] = (float) $cambista->comissao_aposta()->sum('valor');
+
+                $apostas = $cambista->apostas()->where('status','ganhou')->get();
+                $valoresSorteados = 0;
+                if($apostas->first()){
+                    foreach($apostas as $aposta){
+                        $itens = $aposta->itens()->with('sorteados')->get();
+                        if($itens->first()){
+                            foreach($itens as $item){
+                                $valoresSorteados += $item->sorteados()->sum('valor');
+                            }
+                        }
+                    }
+                }
+                $cambistas[$key]['saidas'] = (float) $cambista->comissao_aposta()->sum('valor')+$valoresSorteados;
             }
         }
         return $cambistas;

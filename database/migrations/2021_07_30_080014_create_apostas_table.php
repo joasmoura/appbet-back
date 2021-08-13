@@ -20,6 +20,7 @@ class CreateApostasTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->double('total',10,2);
             $table->enum('status',['aberto','ganhou','perdeu','cancelado'])->default('aberto');
+            $table->string('tel_apostador')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')

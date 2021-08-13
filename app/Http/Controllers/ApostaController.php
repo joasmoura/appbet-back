@@ -77,10 +77,10 @@ class ApostaController extends Controller
             'horario_id' => $dados['id'],
             'codigo' => $this->gerar_codigo(),
             'total' => (float) $dados['valorTotal'],
-            'status' => 'aberto'
+            'status' => 'aberto',
+            'tel_apostador' => $dados['telefone']
         ]);
 
-        // $salvo = true;
         if($salvo){
             if($dados['itens']){
                 foreach($dados['itens'] as $item){
@@ -108,13 +108,17 @@ class ApostaController extends Controller
                             'valor' => $valor
                         ]);
                     }
-
-
                 }
             }
 
+            $salvo->data = date('d/m/Y H:i',strtotime($salvo->created_at));
+            $salvo->cambista = $salvo->cambista;
+            $salvo->horario = $salvo->horario;
+            $salvo->horario->data = date('d/m/Y',strtotime($salvo->horario->created_at));
+
             return response()->json([
                 'status' => true,
+                'confirmada' => $salvo
             ],Response::HTTP_OK);
         }else{
             return response()->json([

@@ -35,14 +35,14 @@ class ExtracaoController extends Controller
         $codigo = $dados['codigo'];
         $de = date('Y-m-d',strtotime($dados['dataInicio']));
         $fim = date('Y-m-d',strtotime($dados['dataFim']));
-
+        
         $usuario = auth()->user();
 
         $apostas = $usuario->apostas()->with('itens','horario','cambista')->where(function($query) use($codigo, $de, $fim) {
-            $query->where('status','!=', 'cancelado');
+            $query->where('codigo','like','%'.$codigo.'%');
             $query->whereDate('created_at', '>=',$de);
             $query->whereDate('created_at', '<=',$fim);
-            $query->where('codigo','like','%'.$codigo.'%');
+            $query->where('status','!=', 'cancelado');
         })->get();
 
         if($apostas->first()){
