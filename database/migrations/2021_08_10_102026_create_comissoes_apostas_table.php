@@ -16,17 +16,12 @@ class CreateComissoesApostasTable extends Migration
         Schema::create('comissoes_apostas', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('aposta_id');
             $table->double('valor',10,2);
             $table->timestamps();
 
             $table->foreign('user_id')
             ->references('id')
             ->on('users');
-
-            $table->foreign('aposta_id')
-            ->references('id')
-            ->on('apostas');
         });
     }
 
