@@ -35,7 +35,7 @@ class ExtracaoController extends Controller
         $codigo = $dados['codigo'];
         $de = date('Y-m-d',strtotime($dados['dataInicio']));
         $fim = date('Y-m-d',strtotime($dados['dataFim']));
-        
+
         $usuario = auth()->user();
 
         $apostas = $usuario->apostas()->with('itens','horario','cambista')->where(function($query) use($codigo, $de, $fim) {
@@ -189,9 +189,8 @@ class ExtracaoController extends Controller
         $hora = Horarios_Extracao::find($id);
 
         if($hora){
-            $apostas = $hora->apostas()->with('itens')->get();
+            $apostas = $hora->apostas()->with('itens')->where('status','!=','cancelado')->get();
             $sorteados = [];
-            $sorteios_iguais = [];
 
             if($apostas->first()){
                 foreach($apostas as $aposta){
@@ -205,7 +204,7 @@ class ExtracaoController extends Controller
 
                         foreach($numero as $n){
                             for($i = $de; $i <= $ate; $i++){
-                                if($i == 1 && $n == $request->premio_1){
+                                if($i == 1 && $this->compara_numeros($n,$request->premio_1)){
                                     $aposta_sorteada = true;
                                     array_push($sorteados, [
                                         'item_aposta_id' => $item->id,
@@ -213,7 +212,7 @@ class ExtracaoController extends Controller
                                         'numero_sorteado' => (int) $n,
                                         'valor' => $item->poss_ganho
                                     ]);
-                                } elseif($i == 2 && $n == $request->premio_2){
+                                } elseif($i == 2 && $this->compara_numeros($n, $request->premio_2)){
                                     $aposta_sorteada = true;
                                     array_push($sorteados, [
                                         'item_aposta_id' => $item->id,
@@ -221,7 +220,7 @@ class ExtracaoController extends Controller
                                         'numero_sorteado' => (int) $n,
                                         'valor' => $item->poss_ganho
                                     ]);
-                                } elseif($i == 3 && $n == $request->premio_3){
+                                } elseif($i == 3 && $this->compara_numeros($n, $request->premio_3)){
                                     $aposta_sorteada = true;
                                     array_push($sorteados, [
                                         'item_aposta_id' => $item->id,
@@ -229,7 +228,7 @@ class ExtracaoController extends Controller
                                         'numero_sorteado' => (int) $n,
                                         'valor' => $item->poss_ganho
                                     ]);
-                                } elseif($i == 4 && $n == $request->premio_4){
+                                } elseif($i == 4 && $this->compara_numeros($n, $request->premio_4)){
                                     $aposta_sorteada = true;
                                     array_push($sorteados, [
                                         'item_aposta_id' => $item->id,
@@ -237,7 +236,7 @@ class ExtracaoController extends Controller
                                         'numero_sorteado' => (int) $n,
                                         'valor' => $item->poss_ganho
                                     ]);
-                                } elseif($i == 5 && $n == $request->premio_5){
+                                } elseif($i == 5 && $this->compara_numeros($n, $request->premio_5)){
                                     $aposta_sorteada = true;
                                     array_push($sorteados, [
                                         'item_aposta_id' => $item->id,
@@ -245,7 +244,7 @@ class ExtracaoController extends Controller
                                         'numero_sorteado' => (int) $n,
                                         'valor' => $item->poss_ganho
                                     ]);
-                                } elseif($i == 6 && $n == $request->premio_6){
+                                } elseif($i == 6 && $this->compara_numeros($n, $request->premio_6)){
                                     $aposta_sorteada = true;
                                     array_push($sorteados, [
                                         'item_aposta_id' => $item->id,
@@ -253,7 +252,7 @@ class ExtracaoController extends Controller
                                         'numero_sorteado' => (int) $n,
                                         'valor' => $item->poss_ganho
                                     ]);
-                                } elseif($i == 7 && $n == $request->premio_7){
+                                } elseif($i == 7 && $this->compara_numeros($n, $request->premio_7)){
                                     $aposta_sorteada = true;
                                     array_push($sorteados, [
                                         'item_aposta_id' => $item->id,
@@ -271,7 +270,6 @@ class ExtracaoController extends Controller
                     }else{
                         $aposta->status = 'perdeu';
                     }
-
                     $aposta->save();
                 }
             }
@@ -329,8 +327,33 @@ class ExtracaoController extends Controller
         }
     }
 
-    public function verifica_ganhadores(){
+    public function compara_numeros($numero, $premio){
+        $split_numero = str_split($numero);
+        $split_premio = str_split($premio);
+        $novo_premio = [];
+        $novo_numero = [];
 
+        krsort($split_numero);
+        krsort($split_premio);
+        $combinacao = '';
+        foreach($split_premio as $sp){
+            array_push($novo_premio,$sp);
+        }
+
+        foreach($split_numero as $sp){
+            array_push($novo_numero,$sp);
+        }
+
+        foreach($novo_numero as $key => $num){
+            if(isset($novo_premio[$key])){
+                if($num === $novo_premio[$key]){
+                    $combinacao = (string) $num.$combinacao;
+                }else{
+                    break;
+                }
+            }
+        }
+        return $combinacao == $numero;
     }
 
     public function setarStatus($id){
