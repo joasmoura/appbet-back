@@ -48,9 +48,15 @@ class ExtracaoController extends Controller
         if($apostas->first()){
             foreach($apostas as $key => $aposta){
                 $itens = $aposta->itens()->get();
+                $aposta->data = date('d/m/Y',strtotime($aposta->created_at));
+
+                if($aposta->horario){
+                    $aposta->horario->data = date('d/m/Y',strtotime($aposta->horario->created_at));
+                }
                 if($itens->first()){
                     foreach($itens as $keyItem => $item){
                         $apostas[$key]['itens'][$keyItem]['sorteado'] = $item->sorteados;
+                        $apostas[$key]['itens'][$keyItem]['numero'] = json_decode($item->numero,true);
                     }
                 }
             }
