@@ -55,7 +55,8 @@ class MercadoController extends Controller
             'terno_grupo_combinado' => $mercado['terno_grupo_combinado'],
             'passe_seco' => $mercado['passe_seco'],
             'terno_dezena_cercado' => $mercado['terno_dezena_cercado'],
-            'grupo_combinado' => $mercado['grupo_combinado']
+            'grupo_combinado' => $mercado['grupo_combinado'],
+            'queima' => $mercado['queima'],
         ]);
 
         if ($salvo) {
@@ -123,6 +124,7 @@ class MercadoController extends Controller
             $dados->passe_seco = $mercado['passe_seco'];
             $dados->terno_dezena_cercado = $mercado['terno_dezena_cercado'];
             $dados->grupo_combinado = $mercado['grupo_combinado'];
+            $dados->queima = $mercado['queima'];
 
             $salvo = $dados->save();
 

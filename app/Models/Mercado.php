@@ -15,5 +15,5 @@ class Mercado extends Model
     'milhar_invertida', 'mc_invertida', 'centena_invertida',
     'duque_dezena', 'passe_combinado',
     'terno_grupo_combinado', 'passe_seco', 'terno_dezena_cercado',
-    'grupo_combinado'];
+    'grupo_combinado', 'queima'];
 }

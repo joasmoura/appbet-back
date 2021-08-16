@@ -99,6 +99,121 @@ class CaixaController extends Controller
         return $cambistas;
     }
 
+    public function caixa_cambista(Request $request){
+        $usuario = auth()->user();
+
+        $datas = $request->datas;
+        $dataInicio = ($datas['dataInicio'] ? date('Y-m-d',strtotime($datas['dataInicio'])) : null);
+        $dataFim = ($datas['dataFim'] ? date('Y-m-d',strtotime($datas['dataFim'])) : null);
+
+        $usuario->load('comissao_aposta','apostas','movimentacoes');
+
+        $movimentacoes = $usuario->movimentacoes();
+
+        $creditos = $movimentacoes->where(function($query) use($dataInicio, $dataFim) {
+            $query->where('tipo','credito');
+            $query->whereDate('data', '>=', $dataInicio);
+            $query->whereDate('data', '<=', $dataFim);
+        })->sum('valor');
+
+        $retiradas = $movimentacoes->where(function($query) use($dataInicio, $dataFim){
+            $query->where('tipo','retirada');
+            $query->whereDate('data', '>=', $dataInicio);
+            $query->whereDate('data', '<=', $dataFim);
+        })->sum('valor');
+
+        $apostas = $usuario->apostas()->with('itens')->where(function($query) use($dataInicio, $dataFim){
+            $query->where('status','!=','cancelado');
+            $query->whereDate('created_at', '>=', $dataInicio);
+            $query->whereDate('created_at', '<=', $dataFim);
+        });
+
+        $saldo_anterior = $this->saldo_anterior($usuario,$dataInicio);
+        $entradas = (float) $apostas->sum('total');// Soma dos valores das apostas feitas
+
+        $usuario['creditos'] = $creditos;
+        $usuario['retiradas'] = $retiradas;
+        $usuario['entradas'] = $entradas;
+
+        $valoresSorteados = 0;
+
+        $todasApostas = $apostas->get();
+        if($todasApostas->first()){
+            foreach($todasApostas as $aposta){
+                $itens = $aposta->itens()->with('sorteados')->get();
+                if($itens->first()){
+                    foreach($itens as $item){
+                        $valoresSorteados += $item->sorteados()->sum('valor');// Soma dos valores dos prêmios do cambista
+                    }
+                }
+            }
+        }
+        $valorComissoes = $usuario->comissao_aposta()->where(function($query) use($dataInicio, $dataFim) {
+            $query->whereDate('created_at', '>=', $dataInicio);
+            $query->whereDate('created_at', '<=', $dataFim);
+        })->sum('valor');
+        $usuario['saidas'] = (float) $valorComissoes+$valoresSorteados;
+        $usuario['premios'] = $valoresSorteados;
+
+        $usuario['valorApostas'] = $entradas;
+        $usuario['valorComissoes'] = $valorComissoes;
+
+        $usuario['saldoAnterior'] = $saldo_anterior;
+        // $usuario['saldo'] = ($saldo_anterior+
+        return $usuario;
+    }
+
+    public function saldo_anterior($cambista, $dataInicio){
+        $apostas = $cambista->apostas()->with('itens')->where(function($query) use($dataInicio){
+            $query->where('status','!=','cancelado');
+            $query->whereDate('created_at', '<', $dataInicio);
+        });
+
+        $movimentacoes = $cambista->movimentacoes();
+
+        $creditos = $movimentacoes->where(function($query) use($dataInicio) {
+            $query->where('tipo','credito');
+            $query->whereDate('data', '<', $dataInicio);
+        })->sum('valor');
+
+        $retiradas = $movimentacoes->where(function($query) use($dataInicio){
+            $query->where('tipo','retirada');
+            $query->whereDate('data', '<', $dataInicio);
+        })->sum('valor');
+
+        $apostas = $cambista->apostas()->with('itens')->where(function($query) use($dataInicio){
+            $query->where('status','!=','cancelado');
+            $query->whereDate('created_at', '<', $dataInicio);
+        });
+
+        $entradas = (float) $apostas->sum('total');
+
+        $valoresSorteados = 0;
+
+        $todasApostas = $apostas->get();
+        if($todasApostas->first()){
+            foreach($todasApostas as $aposta){
+                $itens = $aposta->itens()->with('sorteados')->get();
+                if($itens->first()){
+                    foreach($itens as $item){
+                        $valoresSorteados += $item->sorteados()->sum('valor');// Soma dos valores dos prêmios do cambista
+                    }
+                }
+            }
+        }
+
+        $valorComissoes = $cambista->comissao_aposta()->where(function($query) use($dataInicio) {
+            $query->whereDate('created_at', '<', $dataInicio);
+        })->sum('valor');
+        $saidas = (float) $valorComissoes+$valoresSorteados+$retiradas;
+
+        $totalEntradas = (float) $creditos+$entradas;
+
+        $saldo = $totalEntradas-$saidas;
+
+        return $saldo;
+    }
+
     /**
      * Show the form for creating a new resource.
      *

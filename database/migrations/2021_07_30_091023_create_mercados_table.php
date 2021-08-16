@@ -33,6 +33,7 @@ class CreateMercadosTable extends Migration
             $table->string('passe_seco');
             $table->string('grupo_combinado');
             $table->string('terno_dezena_cercado');
+            $table->string('queima');
             $table->timestamps();
 
             $table->foreign('regiao_id')
