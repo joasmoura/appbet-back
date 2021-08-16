@@ -85,6 +85,6 @@ class User extends Authenticatable
     }
 
     public function comissao_aposta(){
-        return $this->hasMany(ComissoesAposta::class,'user_id','id');
+        return $this->hasMany(ComissoesAposta::class,'gerente_id','id');
     }
 }

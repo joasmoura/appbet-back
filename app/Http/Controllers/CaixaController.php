@@ -68,24 +68,52 @@ class CaixaController extends Controller
     }
 
     public function caixa_cambistas(Request $request){
-        $cambistas = User::with('comissao_aposta','apostas')->where('perfil','cambista')->paginate(10);
+        $cambistas = User::with('comissao_aposta','apostas','movimentacoes')->where('perfil','cambista')->paginate(10);
+
+        $dataInicio = ($request['dataInicio'] ? dataParaBanco($request['dataInicio']) : null);
+        $dataFim = ($request['dataFim'] ? dataParaBanco($request['dataFim']) : null);
+
         if($cambistas->first()){
             $entradas = 0;
             foreach($cambistas as $key => $cambista){
-                $creditos = $cambista->movimentacoes()->where('tipo','credito')->sum('valor');
-                $retiradas = $cambista->movimentacoes()->where('tipo','retirada')->sum('valor');
+                $movimentacoes = $cambista->movimentacoes();
+                $creditos = $movimentacoes->where(function($query) use($dataInicio, $dataFim) {
+                    $query->where('tipo','credito');
+                    $query->whereDate('data', '>=', $dataInicio);
+                    $query->whereDate('data', '<=', $dataFim);
+                })->sum('valor');
 
-                $entradas = (float) $cambista->apostas()->sum('total');
+                $retiradas = $movimentacoes->where(function($query) use($dataInicio, $dataFim){
+                    $query->where('tipo','retirada');
+                    $query->whereDate('data', '>=', $dataInicio);
+                    $query->whereDate('data', '<=', $dataFim);
+                })->sum('valor');
+
+                $apostas = $cambista->apostas()->with('itens')->where(function($query) use($dataInicio, $dataFim){
+                    $query->where('status','!=','cancelado');
+                    $query->whereDate('created_at', '>=', $dataInicio);
+                    $query->whereDate('created_at', '<=', $dataFim);
+                });
+
+                $saldo_anterior = $this->saldo_anterior($cambista,$dataInicio);
+                $cambistas[$key]['saldoAnterior'] = $saldo_anterior;
+                $entradas = $apostas->sum('total');
 
                 $cambistas[$key]['creditos'] = $creditos;
                 $cambistas[$key]['retiradas'] = $retiradas;
                 $cambistas[$key]['entradas'] = $entradas;
 
-                $apostas = $cambista->apostas()->where('status','ganhou')->get();
                 $valoresSorteados = 0;
-                if($apostas->first()){
-                    foreach($apostas as $aposta){
+                $todasApostas = $apostas->get();
+                $comissoes = 0;
+                if($todasApostas->first()){
+                    foreach($todasApostas as $aposta){
                         $itens = $aposta->itens()->with('sorteados')->get();
+                        $comissoes += $aposta->comissao_aposta()->where(function($query) use($dataInicio, $dataFim) {
+                            $query->whereDate('created_at', '>=', $dataInicio);
+                            $query->whereDate('created_at', '<=', $dataFim);
+                        })->sum('valor');;
+
                         if($itens->first()){
                             foreach($itens as $item){
                                 $valoresSorteados += $item->sorteados()->sum('valor');
@@ -93,7 +121,8 @@ class CaixaController extends Controller
                         }
                     }
                 }
-                $cambistas[$key]['saidas'] = (float) $cambista->comissao_aposta()->sum('valor')+$valoresSorteados;
+                $cambistas[$key]['saidas'] = $comissoes+$valoresSorteados;
+                $cambistas[$key]['saldo'] = ($saldo_anterior+$entradas+$creditos)-($cambistas[$key]['saidas']+$retiradas);
             }
         }
         return $cambistas;
@@ -126,40 +155,41 @@ class CaixaController extends Controller
             $query->where('status','!=','cancelado');
             $query->whereDate('created_at', '>=', $dataInicio);
             $query->whereDate('created_at', '<=', $dataFim);
-        });
+        })->get();
 
         $saldo_anterior = $this->saldo_anterior($usuario,$dataInicio);
-        $entradas = (float) $apostas->sum('total');// Soma dos valores das apostas feitas
+        $entradas = 0;// Soma dos valores das apostas feitas
 
         $usuario['creditos'] = $creditos;
         $usuario['retiradas'] = $retiradas;
         $usuario['entradas'] = $entradas;
 
         $valoresSorteados = 0;
-
-        $todasApostas = $apostas->get();
-        if($todasApostas->first()){
-            foreach($todasApostas as $aposta){
+        $comissoes = 0;
+        if($apostas->first()){
+            foreach($apostas as $aposta){
                 $itens = $aposta->itens()->with('sorteados')->get();
                 if($itens->first()){
                     foreach($itens as $item){
+                        $entradas += $aposta->total;
                         $valoresSorteados += $item->sorteados()->sum('valor');// Soma dos valores dos prêmios do cambista
+                        $comissoes += $aposta->comissao_aposta()->where(function($query) use($dataInicio, $dataFim) {
+                            $query->whereDate('created_at', '>=', $dataInicio);
+                            $query->whereDate('created_at', '<=', $dataFim);
+                        })->sum('valor');
                     }
                 }
             }
         }
-        $valorComissoes = $usuario->comissao_aposta()->where(function($query) use($dataInicio, $dataFim) {
-            $query->whereDate('created_at', '>=', $dataInicio);
-            $query->whereDate('created_at', '<=', $dataFim);
-        })->sum('valor');
-        $usuario['saidas'] = (float) $valorComissoes+$valoresSorteados;
+
+        $usuario['saidas'] = (float) $comissoes+$valoresSorteados;
         $usuario['premios'] = $valoresSorteados;
 
         $usuario['valorApostas'] = $entradas;
-        $usuario['valorComissoes'] = $valorComissoes;
+        $usuario['valorComissoes'] = $comissoes;
 
         $usuario['saldoAnterior'] = $saldo_anterior;
-        // $usuario['saldo'] = ($saldo_anterior+
+        $usuario['saldo'] = ($saldo_anterior+$entradas+$creditos)-($usuario['saidas']+$retiradas);
         return $usuario;
     }
 
@@ -167,7 +197,7 @@ class CaixaController extends Controller
         $apostas = $cambista->apostas()->with('itens')->where(function($query) use($dataInicio){
             $query->where('status','!=','cancelado');
             $query->whereDate('created_at', '<', $dataInicio);
-        });
+        })->get();
 
         $movimentacoes = $cambista->movimentacoes();
 
@@ -181,31 +211,26 @@ class CaixaController extends Controller
             $query->whereDate('data', '<', $dataInicio);
         })->sum('valor');
 
-        $apostas = $cambista->apostas()->with('itens')->where(function($query) use($dataInicio){
-            $query->where('status','!=','cancelado');
-            $query->whereDate('created_at', '<', $dataInicio);
-        });
-
-        $entradas = (float) $apostas->sum('total');
+        $entradas = 0;
 
         $valoresSorteados = 0;
-
-        $todasApostas = $apostas->get();
-        if($todasApostas->first()){
-            foreach($todasApostas as $aposta){
+        $comissoes = 0;
+        if($apostas->first()){
+            foreach($apostas as $aposta){
                 $itens = $aposta->itens()->with('sorteados')->get();
+                $entradas += $aposta->total;
                 if($itens->first()){
                     foreach($itens as $item){
                         $valoresSorteados += $item->sorteados()->sum('valor');// Soma dos valores dos prêmios do cambista
+                        $comissoes += $aposta->comissao_aposta()->where(function($query) use($dataInicio) {
+                            $query->whereDate('created_at', '>=', $dataInicio);
+                        })->sum('valor');
                     }
                 }
             }
         }
 
-        $valorComissoes = $cambista->comissao_aposta()->where(function($query) use($dataInicio) {
-            $query->whereDate('created_at', '<', $dataInicio);
-        })->sum('valor');
-        $saidas = (float) $valorComissoes+$valoresSorteados+$retiradas;
+        $saidas = (float) $comissoes+$valoresSorteados+$retiradas;
 
         $totalEntradas = (float) $creditos+$entradas;
 

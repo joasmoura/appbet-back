@@ -96,7 +96,7 @@ class ApostaController extends Controller
 
                     if($comissao){
                         $valor = ((float) $item['valor'] * (float) $comissao->valor)/100;
-                        $usuario->comissao_aposta()->create([
+                        $salvo->comissao_aposta()->create([
                             'valor' => $valor
                         ]);
                     }

@@ -23,4 +23,8 @@ class Aposta extends Model
         return $this->hasOne(Horarios_Extracao::class,'id','horario_id');
     }
 
+    public function comissao_aposta(){
+        return $this->hasMany(ComissoesAposta::class,'aposta_id','id');
+    }
+
 }

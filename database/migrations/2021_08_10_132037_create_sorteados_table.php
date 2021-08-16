@@ -24,11 +24,13 @@ class CreateSorteadosTable extends Migration
 
             $table->foreign('resultado_id')
             ->references('id')
-            ->on('premios_horarios');
+            ->on('premios_horarios')
+            ->onDelete('cascade');
 
             $table->foreign('item_aposta_id')
             ->references('id')
-            ->on('itens_apostas');
+            ->on('itens_apostas')
+            ->onDelete('cascade');
         });
     }
 
