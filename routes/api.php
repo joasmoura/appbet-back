@@ -65,6 +65,7 @@ Route::middleware('auth:api')->prefix('painel')->group(function(){
 
     Route::resource('/movimentacao',MovimentacaoController::class);
 
+    Route::get('/caixa/gerente/meu-caixa',[CaixaController::class,'meuCaixa']);
     Route::get('/caixa/caixa_gerentes',[CaixaController::class,'caixa_gerentes']);
     Route::get('/caixa/caixa_supervisores',[CaixaController::class,'caixa_supervisores']);
     Route::post('/caixa/caixa_cambista',[CaixaController::class,'caixa_cambista']);

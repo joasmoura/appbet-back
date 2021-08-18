@@ -32,7 +32,7 @@ class ApostaController extends Controller
      */
     public function index(Request $request)
     {
-        $apostas = Aposta::with('itens','cambista')->orderBy('created_at','desc')->paginate(10);
+        $apostas = Aposta::with('itens','cambista')->orderBy('created_at','desc')->paginate(1);
 
         if($apostas->first()){
             foreach($apostas as $key => $aposta){
@@ -101,11 +101,14 @@ class ApostaController extends Controller
                         ]);
                     }
 
+                    $usuario->limite_credito -= $item['valor'];
+                    $usuario->save();
+
                     $gerente = $usuario->gerente;
                     if($gerente){
-                        $valor = ((float) $item['valor'] * (float) $gerente->comissao_faturamento)/100;
-                        $gerente->comissao_aposta()->create([
-                            'valor' => $valor
+                        $valorFaturamento = ((float) $item['valor'] * (float) $gerente->comissao_faturamento)/100;
+                        $salvo->comissao_gerente()->create([
+                            'valor' => $valorFaturamento,
                         ]);
                     }
                 }

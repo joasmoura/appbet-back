@@ -27,4 +27,8 @@ class Aposta extends Model
         return $this->hasMany(ComissoesAposta::class,'aposta_id','id');
     }
 
+    public function comissao_gerente(){
+        return $this->hasMany(ComissoesGerente::class,'aposta_id','id');
+    }
+
 }

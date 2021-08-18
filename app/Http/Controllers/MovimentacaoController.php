@@ -49,7 +49,7 @@ class MovimentacaoController extends Controller
             'descricao' => $request->descricao,
             'valor' => $request->valor,
             'tipo' => $request->tipo,
-            'data' => date('Y-m-d',strtotime($request->data))
+            'data' => dataParaBanco($request->data)
         ]);
 
         if($salvo){

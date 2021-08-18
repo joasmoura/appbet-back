@@ -18,7 +18,12 @@ class CaixaController extends Controller
     }
 
     public function caixa_gerentes(Request $request){
-        $gerentes = User::with('movimentacoes','cambistas_gerente','comissao_aposta')->where('perfil','gerente')->paginate(10);
+        $usuario = auth()->user();
+        if($usuario->perfil == 'gerente'){
+            $gerentes = User::with('movimentacoes','cambistas_gerente','comissao_aposta')->where('perfil','gerente')->where('id',$usuario->id)->paginate(10);
+        }else{
+            $gerentes = User::with('movimentacoes','cambistas_gerente','comissao_aposta')->where('perfil','gerente')->paginate(10);
+        }
 
         if($gerentes->first()){
             foreach($gerentes as $key => $gerente){
@@ -43,8 +48,125 @@ class CaixaController extends Controller
         return $gerentes;
     }
 
+    public function meuCaixa (Request $request) {// Caixa do gerente
+        $dataInicio = ($request['dataInicio'] ? dataParaBanco($request['dataInicio']) : null);
+        $dataFim = ($request['dataFim'] ? dataParaBanco($request['dataFim']) : null);
+
+        $gerente = auth()->user();
+        $gerente->load('movimentacoes','cambistas_gerente');
+
+        $movimentacoes = $gerente->movimentacoes()->where(function($query) use($dataInicio, $dataFim) {
+            $query->whereDate('data', '>=', $dataInicio);
+            $query->whereDate('data', '<=', $dataFim);
+        })->get();
+
+        $valorCreditos = $movimentacoes->where('tipo','credito')->sum('valor');
+        $valorDebitos = $movimentacoes->where('tipo','retirada')->sum('valor');
+
+        $cambistas = $gerente->cambistas_gerente()->get();
+
+        $valorApostas = 0;
+        $valorComissoesCambistas = 0;
+        $comissaoFaturamento = 0;
+        $valorPremios = 0;
+        if($cambistas->first()){
+            foreach($cambistas as $cambista){
+                $apostas = $cambista->apostas()->where(function($query) use($dataInicio, $dataFim) {
+                    $query->where('status', '!=', 'cancelado');
+                    $query->whereDate('created_at', '>=', $dataInicio);
+                    $query->whereDate('created_at', '<=', $dataFim);
+                })->get();
+                if($apostas->first()){
+                    foreach($apostas as $aposta){
+                        $valorApostas += $aposta->total;
+                        $valorComissoesCambistas = $aposta->comissao_aposta->sum('valor');
+                        $comissaoFaturamento = $aposta->comissao_gerente->sum('valor');
+                        $itens = $aposta->itens()->with('sorteados')->get();
+                        if($itens->first()){
+                            foreach($itens as $item){
+                                $valorPremios += $item->sorteados()->sum('valor');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $lancamentos = $valorCreditos-$valorDebitos;
+        $totalSaidas = $valorPremios+$valorComissoesCambistas;
+        $totalEntradas = $valorApostas;
+        $resultado = $totalEntradas-$totalSaidas;
+
+        $comissaoLucro = ($resultado*$gerente->comissao_lucro)/100;
+
+        $saldoAnterior = $this->meuCaixaAnterior($gerente, $dataInicio);
+        $saldo = $saldoAnterior+$lancamentos+($resultado-$comissaoLucro);
+
+        return compact('valorDebitos','valorCreditos','lancamentos','valorApostas','valorComissoesCambistas',
+        'valorPremios','totalSaidas','totalEntradas','comissaoFaturamento', 'resultado',
+        'comissaoLucro','saldoAnterior','saldo');
+    }
+
+    public function meuCaixaAnterior($gerente, $dataInicio){
+        $movimentacoes = $gerente->movimentacoes()->where(function($query) use($dataInicio) {
+            $query->whereDate('data', '<', $dataInicio);
+        })->get();
+
+        $valorCreditos = $movimentacoes->where('tipo','credito')->sum('valor');
+        $valorDebitos = $movimentacoes->where('tipo','retirada')->sum('valor');
+
+        $cambistas = $gerente->cambistas_gerente()->get();
+
+        $valorApostas = 0;
+        $valorComissoesCambistas = 0;
+        $comissaoFaturamento = 0;
+        $valorPremios = 0;
+        if($cambistas->first()){
+            foreach($cambistas as $cambista){
+                $apostas = $cambista->apostas()->where(function($query) use($dataInicio) {
+                    $query->where('status', '!=', 'cancelado');
+                    $query->whereDate('created_at', '<', $dataInicio);
+                })->get();
+
+                if($apostas->first()){
+                    foreach($apostas as $aposta){
+                        $valorApostas += $aposta->total;
+                        $valorComissoesCambistas = $aposta->comissao_aposta->sum('valor');
+                        $comissaoFaturamento = $aposta->comissao_gerente->sum('valor');
+                        $itens = $aposta->itens()->with('sorteados')->get();
+                        if($itens->first()){
+                            foreach($itens as $item){
+                                $valorPremios += $item->sorteados()->sum('valor');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $lancamentos = $valorCreditos-$valorDebitos;
+        $totalSaidas = $valorPremios+$valorComissoesCambistas+$comissaoFaturamento;
+        $totalEntradas = $valorApostas+$lancamentos;
+        $resultado = $totalEntradas-$totalSaidas;
+
+        $comissaoLucro = ($resultado*$gerente->comissao_lucro)/100;
+
+
+        $saldo = $resultado - $comissaoLucro;
+
+        return $saldo;
+    }
+
     public function caixa_supervisores(Request $request){
-        $supervisores = User::where('perfil','supervisor','cambistas_supervisor')->paginate(10);
+        $usuario = auth()->user();
+        if($usuario->perfil == 'gerente'){
+            $supervisores = User::where('perfil','supervisor','cambistas_supervisor')->where('gerente_id',$usuario->id)->paginate(10);
+        }else if($usuario->perfil == 'supervisor'){
+            $supervisores = User::where('perfil','supervisor','cambistas_supervisor')->where('id',$usuario->id)->paginate(10);
+        }else{
+            $supervisores = User::where('perfil','supervisor','cambistas_supervisor')->paginate(10);
+        }
+
         if($supervisores->first()){
             foreach($supervisores as $key => $supervisor){
                 $creditos = $supervisor->movimentacoes()->where('tipo','credito')->sum('valor');
@@ -68,7 +190,16 @@ class CaixaController extends Controller
     }
 
     public function caixa_cambistas(Request $request){
-        $cambistas = User::with('comissao_aposta','apostas','movimentacoes')->where('perfil','cambista')->paginate(10);
+        $usuario = auth()->user();
+        if($usuario->perfil == 'gerente'){
+            $cambistas = $usuario->cambistas_gerente()->where('perfil','cambista')->paginate(10);
+            $cambistas->load('comissao_aposta', 'apostas','movimentacoes');
+        }else if($usuario->perfil == 'supervisor'){
+            $cambistas = $usuario->cambistas_supervisor()->where('perfil','cambista')->paginate(10);
+            $cambistas->load('comissao_aposta', 'apostas','movimentacoes');
+        }else{
+            $cambistas = User::with('comissao_aposta','apostas','movimentacoes')->where('perfil','cambista')->paginate(10);
+        }
 
         $dataInicio = ($request['dataInicio'] ? dataParaBanco($request['dataInicio']) : null);
         $dataFim = ($request['dataFim'] ? dataParaBanco($request['dataFim']) : null);
@@ -169,14 +300,15 @@ class CaixaController extends Controller
         if($apostas->first()){
             foreach($apostas as $aposta){
                 $itens = $aposta->itens()->with('sorteados')->get();
+                $entradas += $aposta->total;
+                $comissoes += $aposta->comissao_aposta()->where(function($query) use($dataInicio, $dataFim) {
+                    $query->whereDate('created_at', '>=', $dataInicio);
+                    $query->whereDate('created_at', '<=', $dataFim);
+                })->sum('valor');
+
                 if($itens->first()){
                     foreach($itens as $item){
-                        $entradas += $aposta->total;
                         $valoresSorteados += $item->sorteados()->sum('valor');// Soma dos valores dos prêmios do cambista
-                        $comissoes += $aposta->comissao_aposta()->where(function($query) use($dataInicio, $dataFim) {
-                            $query->whereDate('created_at', '>=', $dataInicio);
-                            $query->whereDate('created_at', '<=', $dataFim);
-                        })->sum('valor');
                     }
                 }
             }
