@@ -20,9 +20,9 @@ class CaixaController extends Controller
     public function caixa_gerentes(Request $request){
         $usuario = auth()->user();
         if($usuario->perfil == 'gerente'){
-            $gerentes = User::with('movimentacoes','cambistas_gerente','comissao_aposta')->where('perfil','gerente')->where('id',$usuario->id)->paginate(10);
+            $gerentes = User::with('movimentacoes','cambistas_gerente')->where('perfil','gerente')->where('id',$usuario->id)->paginate(10);
         }else{
-            $gerentes = User::with('movimentacoes','cambistas_gerente','comissao_aposta')->where('perfil','gerente')->paginate(10);
+            $gerentes = User::with('movimentacoes','cambistas_gerente')->where('perfil','gerente')->paginate(10);
         }
 
         if($gerentes->first()){
@@ -42,7 +42,15 @@ class CaixaController extends Controller
                 $gerentes[$key]['creditos'] = $creditos;
                 $gerentes[$key]['retiradas'] = $retiradas;
                 $gerentes[$key]['entradas'] = $entradas;
-                $gerentes[$key]['saidas'] = (float) $gerente->comissao_aposta()->sum('valor');
+
+                $apostas = $gerente->apostas()->where('status','!=', 'cancelado')->get();
+                $comissoes = 0;
+                if($apostas->first()){
+                    foreach($apostas as $aposta){
+                        $comissoes += $aposta->comissao_gerente()->sum('valor');
+                    }
+                }
+                $gerentes[$key]['saidas'] = $comissoes;
             }
         }
         return $gerentes;
@@ -52,8 +60,12 @@ class CaixaController extends Controller
         $dataInicio = ($request['dataInicio'] ? dataParaBanco($request['dataInicio']) : null);
         $dataFim = ($request['dataFim'] ? dataParaBanco($request['dataFim']) : null);
 
-        $gerente = auth()->user();
-        $gerente->load('movimentacoes','cambistas_gerente');
+        if(auth()->user()->perfil == 'administrador'){
+            $gerente = User::with('movimentacoes','cambistas_gerente')->find($request->gerente);
+        }else{
+            $gerente = auth()->user();
+            $gerente->load('movimentacoes','cambistas_gerente');
+        }
 
         $movimentacoes = $gerente->movimentacoes()->where(function($query) use($dataInicio, $dataFim) {
             $query->whereDate('data', '>=', $dataInicio);
