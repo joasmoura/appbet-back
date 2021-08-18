@@ -60,14 +60,16 @@ class CaixaController extends Controller
         $dataInicio = ($request['dataInicio'] ? dataParaBanco($request['dataInicio']) : null);
         $dataFim = ($request['dataFim'] ? dataParaBanco($request['dataFim']) : null);
 
-        if(auth()->user()->perfil == 'administrador'){
-            $gerente = User::with('movimentacoes','cambistas_gerente')->find($request->gerente);
+        $usuario = auth()->user();
+        if($usuario->perfil == 'supervisor'){
+            $usuario->load('movimentacoes','cambistas_gerente');
+            $cambistas = $usuario->cambistas_supervisor()->get();
         }else{
-            $gerente = auth()->user();
-            $gerente->load('movimentacoes','cambistas_gerente');
+            $usuario->load('movimentacoes','cambistas_gerente');
+            $cambistas = $usuario->cambistas_gerente()->get();
         }
 
-        $movimentacoes = $gerente->movimentacoes()->where(function($query) use($dataInicio, $dataFim) {
+        $movimentacoes = $usuario->movimentacoes()->where(function($query) use($dataInicio, $dataFim) {
             $query->whereDate('data', '>=', $dataInicio);
             $query->whereDate('data', '<=', $dataFim);
         })->get();
@@ -75,7 +77,6 @@ class CaixaController extends Controller
         $valorCreditos = $movimentacoes->where('tipo','credito')->sum('valor');
         $valorDebitos = $movimentacoes->where('tipo','retirada')->sum('valor');
 
-        $cambistas = $gerente->cambistas_gerente()->get();
 
         $valorApostas = 0;
         $valorComissoesCambistas = 0;
@@ -109,9 +110,9 @@ class CaixaController extends Controller
         $totalEntradas = $valorApostas;
         $resultado = $totalEntradas-$totalSaidas;
 
-        $comissaoLucro = ($resultado*$gerente->comissao_lucro)/100;
+        $comissaoLucro = ($resultado*$usuario->comissao_lucro)/100;
 
-        $saldoAnterior = $this->meuCaixaAnterior($gerente, $dataInicio);
+        $saldoAnterior = $this->meuCaixaAnterior($usuario, $dataInicio);
         $saldo = $saldoAnterior+$lancamentos+($resultado-$comissaoLucro);
 
         return compact('valorDebitos','valorCreditos','lancamentos','valorApostas','valorComissoesCambistas',
@@ -119,15 +120,19 @@ class CaixaController extends Controller
         'comissaoLucro','saldoAnterior','saldo');
     }
 
-    public function meuCaixaAnterior($gerente, $dataInicio){
-        $movimentacoes = $gerente->movimentacoes()->where(function($query) use($dataInicio) {
+    public function meuCaixaAnterior($usuario, $dataInicio){
+        $movimentacoes = $usuario->movimentacoes()->where(function($query) use($dataInicio) {
             $query->whereDate('data', '<', $dataInicio);
         })->get();
 
         $valorCreditos = $movimentacoes->where('tipo','credito')->sum('valor');
         $valorDebitos = $movimentacoes->where('tipo','retirada')->sum('valor');
 
-        $cambistas = $gerente->cambistas_gerente()->get();
+        if($usuario->perfil == 'gerente'){
+            $cambistas = $usuario->cambistas_gerente()->get();
+        }else{
+            $cambistas = $usuario->cambistas_supervisor()->get();
+        }
 
         $valorApostas = 0;
         $valorComissoesCambistas = 0;
@@ -161,7 +166,7 @@ class CaixaController extends Controller
         $totalEntradas = $valorApostas+$lancamentos;
         $resultado = $totalEntradas-$totalSaidas;
 
-        $comissaoLucro = ($resultado*$gerente->comissao_lucro)/100;
+        $comissaoLucro = ($resultado*$usuario->comissao_lucro)/100;
 
 
         $saldo = $resultado - $comissaoLucro;
@@ -204,13 +209,13 @@ class CaixaController extends Controller
     public function caixa_cambistas(Request $request){
         $usuario = auth()->user();
         if($usuario->perfil == 'gerente'){
-            $cambistas = $usuario->cambistas_gerente()->where('perfil','cambista')->paginate(10);
-            $cambistas->load('comissao_aposta', 'apostas','movimentacoes');
+            $cambistas = $usuario->cambistas_gerente()->paginate(10);
+            $cambistas->load('apostas','movimentacoes');
         }else if($usuario->perfil == 'supervisor'){
-            $cambistas = $usuario->cambistas_supervisor()->where('perfil','cambista')->paginate(10);
-            $cambistas->load('comissao_aposta', 'apostas','movimentacoes');
+            $cambistas = $usuario->cambistas_supervisor()->paginate(10);
+            $cambistas->load('apostas','movimentacoes');
         }else{
-            $cambistas = User::with('comissao_aposta','apostas','movimentacoes')->where('perfil','cambista')->paginate(10);
+            $cambistas = User::with('apostas','movimentacoes')->where('perfil','cambista')->paginate(10);
         }
 
         $dataInicio = ($request['dataInicio'] ? dataParaBanco($request['dataInicio']) : null);
@@ -367,7 +372,7 @@ class CaixaController extends Controller
                     foreach($itens as $item){
                         $valoresSorteados += $item->sorteados()->sum('valor');// Soma dos valores dos prêmios do cambista
                         $comissoes += $aposta->comissao_aposta()->where(function($query) use($dataInicio) {
-                            $query->whereDate('created_at', '>=', $dataInicio);
+                            $query->whereDate('created_at', '<', $dataInicio);
                         })->sum('valor');
                     }
                 }
