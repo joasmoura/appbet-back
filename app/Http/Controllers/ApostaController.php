@@ -32,7 +32,17 @@ class ApostaController extends Controller
      */
     public function index(Request $request)
     {
-        $apostas = Aposta::with('itens','cambista')->orderBy('created_at','desc')->paginate(1);
+        $usuario = auth()->user();
+
+        if($usuario->perfil == 'gerente'){
+            $cambistas = $usuario->cambistas_gerente()->select('id');
+            $apostas = Aposta::with('itens','cambista')->whereIn('user_id',$cambistas)->orderBy('created_at','desc')->paginate(10);
+        }elseif($usuario->perfil == 'supervisor'){
+            $cambistas = $usuario->cambistas_supervisor()->select('id')->get();
+            $apostas = Aposta::with('itens','cambista')->whereIn('user_id',$cambistas)->orderBy('created_at','desc')->paginate(10);
+        }else{
+            $apostas = Aposta::with('itens','cambista')->orderBy('created_at','desc')->paginate(10);
+        }
 
         if($apostas->first()){
             foreach($apostas as $key => $aposta){

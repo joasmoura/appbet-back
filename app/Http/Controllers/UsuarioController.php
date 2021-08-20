@@ -18,7 +18,7 @@ class UsuarioController extends Controller
     public function login($base, Request $request){
         $dados = $request->all();
 
-         if(Auth::attempt(['username' => $dados['username'], 'password' => $dados['password']])){
+        if(Auth::attempt(['username' => $dados['username'], 'password' => $dados['password']])){
             $user = auth()->user();
 
             return response()->json([
@@ -26,11 +26,11 @@ class UsuarioController extends Controller
                 'usuario' => $user,
                 'authenticationToken' => $user->createToken($dados['username'])->accessToken
             ],Response::HTTP_OK);
-         }else{
-             return response()->json([
+        }else{
+            return response()->json([
                 'status' => false
-             ],Response::HTTP_OK);
-         }
+            ],Response::HTTP_OK);
+        }
     }
 
     public function limite(){
@@ -56,8 +56,14 @@ class UsuarioController extends Controller
     }
 
     public function supervisores(){
-        $gerentes = User::with('regiao')->where('perfil','supervisor')->paginate(10);
-        return $gerentes;
+        $usuario = auth()->user();
+
+        if($usuario->perfil == 'gerente'){
+            $supervisores = $usuario->supervisores_gerente()->with('regiao')->where('perfil','supervisor')->paginate(10);
+        }else{
+            $supervisores = User::with('regiao')->where('perfil','supervisor')->paginate(10);
+        }
+        return $supervisores;
     }
 
     public function supervisores_select(){
@@ -66,8 +72,16 @@ class UsuarioController extends Controller
     }
 
     public function cambistas(){
-        $cambista = User::with('comissao','gerente')->where('perfil','cambista')->paginate(10);
-        return $cambista;
+        $usuario = auth()->user();
+
+        if($usuario->perfil == 'gerente'){
+            $cambistas = $usuario->cambistas_gerente()->with('comissao','gerente')->where('perfil','cambista')->paginate(10);
+        }elseif($usuario->perfil == 'supervisor'){
+            $cambistas = $usuario->cambistas_supervisor()->with('comissao','gerente')->where('perfil','cambista')->paginate(10);
+        }else{
+            $cambistas = User::with('comissao','gerente')->where('perfil','cambista')->paginate(10);
+        }
+        return $cambistas;
     }
 
     public function cambistas_select(){

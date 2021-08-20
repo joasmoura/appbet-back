@@ -16,6 +16,34 @@ class ExtracaoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    private $grupos = [
+        '01' => ['01', '02', '03' ,'04'],
+        '02' => ['05', '06', '07' ,'08'],
+        '03' => ['09', '10', '11' ,'12'],
+        '04' => ['13', '14', '15' ,'16'],
+        '05' => ['17', '18', '19' ,'20'],
+        '06' => ['21', '22', '23' ,'24'],
+        '07' => ['25', '26', '27' ,'28'],
+        '08' => ['29', '30', '31' ,'32'],
+        '09' => ['33', '34', '35' ,'36'],
+        '10' => ['37', '38', '39' ,'40'],
+        '11' => ['41', '42', '43' ,'44'],
+        '12' => ['45', '46', '47' ,'48'],
+        '13' => ['49', '50', '51' ,'52'],
+        '14' => ['53', '54', '55' ,'56'],
+        '15' => ['57', '58', '59' ,'60'],
+        '16' => ['61', '62', '63' ,'64'],
+        '17' => ['65', '66', '67' ,'68'],
+        '18' => ['69', '70', '71' ,'72'],
+        '19' => ['73', '74', '75' ,'76'],
+        '20' => ['77', '78', '79' ,'80'],
+        '21' => ['81', '82', '83' ,'84'],
+        '22' => ['85', '86', '87' ,'88'],
+        '23' => ['89', '90', '91' ,'92'],
+        '24' => ['93', '94', '95' ,'96'],
+        '25' => ['97', '98', '99' ,'00'],
+    ];
     public function index(Request $request)
     {
         $extracoes = Extracao::with('horas')->orderBy('created_at','desc')->paginate(10);
@@ -198,6 +226,16 @@ class ExtracaoController extends Controller
             $apostas = $hora->apostas()->with('itens')->where('status','!=','cancelado')->get();
             $sorteados = [];
 
+            $premios = [
+                1 => $request->premio_1,
+                2 => $request->premio_2,
+                3 => $request->premio_3,
+                4 => $request->premio_4,
+                5 => $request->premio_5,
+                6 => $request->premio_6,
+                7 => $request->premio_7,
+            ];
+
             if($apostas->first()){
                 foreach($apostas as $aposta){
                     $itens = $aposta->itens;
@@ -208,69 +246,77 @@ class ExtracaoController extends Controller
                         $ate = $item->premio_ate;
                         $numero = json_decode($item->numero,true);
 
-                        foreach($numero as $n){
-                            for($i = $de; $i <= $ate; $i++){
-                                if($i == 1 && $this->compara_numeros($n,$request->premio_1)){
-                                    $aposta_sorteada = true;
-                                    array_push($sorteados, [
-                                        'item_aposta_id' => $item->id,
-                                        'numero_premio' => (int) $i,
-                                        'numero_sorteado' => (int) $n,
-                                        'valor' => $item->poss_ganho
-                                    ]);
-                                } elseif($i == 2 && $this->compara_numeros($n, $request->premio_2)){
-                                    $aposta_sorteada = true;
-                                    array_push($sorteados, [
-                                        'item_aposta_id' => $item->id,
-                                        'numero_premio' => (int) $i,
-                                        'numero_sorteado' => (int) $n,
-                                        'valor' => $item->poss_ganho
-                                    ]);
-                                } elseif($i == 3 && $this->compara_numeros($n, $request->premio_3)){
-                                    $aposta_sorteada = true;
-                                    array_push($sorteados, [
-                                        'item_aposta_id' => $item->id,
-                                        'numero_premio' => (int) $i,
-                                        'numero_sorteado' => (int) $n,
-                                        'valor' => $item->poss_ganho
-                                    ]);
-                                } elseif($i == 4 && $this->compara_numeros($n, $request->premio_4)){
-                                    $aposta_sorteada = true;
-                                    array_push($sorteados, [
-                                        'item_aposta_id' => $item->id,
-                                        'numero_premio' => (int) $i,
-                                        'numero_sorteado' => (int) $n,
-                                        'valor' => $item->poss_ganho
-                                    ]);
-                                } elseif($i == 5 && $this->compara_numeros($n, $request->premio_5)){
-                                    $aposta_sorteada = true;
-                                    array_push($sorteados, [
-                                        'item_aposta_id' => $item->id,
-                                        'numero_premio' => (int) $i,
-                                        'numero_sorteado' => (int) $n,
-                                        'valor' => $item->poss_ganho
-                                    ]);
-                                } elseif($i == 6 && $this->compara_numeros($n, $request->premio_6)){
-                                    $aposta_sorteada = true;
-                                    array_push($sorteados, [
-                                        'item_aposta_id' => $item->id,
-                                        'numero_premio' => (int) $i,
-                                        'numero_sorteado' => (int) $n,
-                                        'valor' => $item->poss_ganho
-                                    ]);
-                                } elseif($i == 7 && $this->compara_numeros($n, $request->premio_7)){
-                                    $aposta_sorteada = true;
-                                    array_push($sorteados, [
-                                        'item_aposta_id' => $item->id,
-                                        'numero_premio' => (int) $i,
-                                        'numero_sorteado' => (int) $n,
-                                        'valor' => $item->poss_ganho
-                                    ]);
+
+                        if((int) $item->modalidade == 1 || (int) $item->modalidade == 2 || (int) $item->modalidade == 3){
+                            foreach($numero as $n){
+                                for($i = $de; $i <= $ate; $i++){
+                                    if($this->compara_numeros($n,$premios[$i])){
+                                        $aposta_sorteada = true;
+                                        array_push($sorteados, [
+                                            'item_aposta_id' => $item->id,
+                                            'numero_premio' => (int) $i,
+                                            'numero_sorteado' => (int) $n,
+                                            'valor' => $item->poss_ganho
+                                        ]);
+                                    }
+                                }
+                            }
+                        }elseif((int) $item->modalidade == 15){// Verificação para a modalidade passe seco
+                            $comparacao = $this->compara_numeros_dois_premios($numero,$premios[1], $premios[2], $item);
+                            if($comparacao){
+                                $aposta_sorteada = true;
+                                array_push($sorteados, $comparacao);
+                            }
+                        }elseif((int) $item->modalidade == 13){// Verificação para a modalidade passe combinado
+                            $demais_premios = $premios;
+                            unset($demais_premios[1]);
+
+                            $comparacao = $this->compara_numero_um_eresto($numero,$premios[1], $demais_premios, $item);
+
+                            if(!empty($comparacao)){
+                                $aposta_sorteada = true;
+                                foreach($comparacao as $c){
+                                    array_push($sorteados, $c);
+                                }
+                            }
+                        }elseif((int) $item->modalidade == 18){// Verificação para a modalidade queima
+                            foreach($numero as $n){
+                                for($i = $de; $i <= $ate; $i++){
+                                    if($this->compara_numero_queima($n,$premios[$i])){
+                                        $aposta_sorteada = true;
+                                        array_push($sorteados, [
+                                            'item_aposta_id' => $item->id,
+                                            'numero_premio' => (int) $i,
+                                            'numero_sorteado' => (int) $n,
+                                            'valor' => $item->poss_ganho
+                                        ]);
+                                    }
+                                }
+                            }
+                        }elseif((int) $item->modalidade == 4){// Verificação para a modalidade Grupo
+                            foreach($numero as $n){
+                                for($i = $de; $i <= $ate; $i++){
+                                    if($this->compara_numero_grupo($n,$premios[$i])){
+                                        array_push($sorteados, [
+                                            'item_aposta_id' => $item->id,
+                                            'numero_premio' => (int) $i,
+                                            'numero_sorteado' => (int) $n,
+                                            'valor' => $item->poss_ganho
+                                        ]);
+                                    }
+                                }
+                            }
+                        }elseif((int) $item->modalidade == 11){
+                            $comparacao = $this->compara_numero_duque_dezena($numero,$premios, $item);
+                            if(!empty($comparacao)){
+                                foreach($comparacao as $c){
+                                    array_push($sorteados, $c);
                                 }
                             }
                         }
                     }
 
+                    dd($sorteados);
                     if($aposta_sorteada){
                         $aposta->status = 'ganhou';
                     }else{
@@ -333,7 +379,7 @@ class ExtracaoController extends Controller
         }
     }
 
-    public function compara_numeros($numero, $premio){
+    public function compara_numeros($numero, $premio){//verifica para as modalidade Milhar, centena e dezena
         $split_numero = str_split($numero);
         $split_premio = str_split($premio);
         $novo_premio = [];
@@ -342,6 +388,7 @@ class ExtracaoController extends Controller
         krsort($split_numero);
         krsort($split_premio);
         $combinacao = '';
+
         foreach($split_premio as $sp){
             array_push($novo_premio,$sp);
         }
@@ -361,6 +408,134 @@ class ExtracaoController extends Controller
         }
         return $combinacao == $numero;
     }
+
+    public function compara_numero_duque_dezena($numero, $premios, $item){
+        $item_grupos = [];
+        foreach($this->grupos as $grupo){
+            foreach($grupo as $g){
+                array_push($item_grupos, $g);
+            }
+        }
+
+        $encontrados = [];
+        $sorteado = [];
+        $numeros_sorteados = [];
+        foreach($numero as $n){
+            for($i = $item->premio_de; $i <= $item->premio_ate; $i++){
+                if(isset($premios[$i])){
+                    $sub = substr($premios[$i], -2);
+                    if($n == $sub && array_search($n, $item_grupos)){
+                        if(count($numeros_sorteados) > 0){
+                            if(!in_array($n, $numeros_sorteados)){
+                                array_push($numeros_sorteados,$n);
+                                array_push($encontrados, ['premio' => $i, 'sorte' => $n]);
+                            }
+                        }else{
+                            array_push($numeros_sorteados,$n);
+                            array_push($encontrados, ['premio' => $i, 'sorte' => $n]);
+                        }
+
+                        if(count($encontrados) == 2){
+                            array_push($sorteado,[
+                                'item_aposta_id' => $item->id,
+                                'numero_premio' => $encontrados[0]['premio'] . '/'. $encontrados[1]['premio'],
+                                'numero_sorteado' => $encontrados[0]['sorte'] . ' '. $encontrados[1]['sorte'],
+                                'valor' => $item->poss_ganho
+                            ]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return $sorteado;
+    }
+
+    public function compara_numero_grupo($numero, $premio){
+        if(isset($this->grupos[$numero])){
+            $grupo = $this->grupos[$numero];
+            $sub = substr($premio, -2);
+            return array_search($sub,$grupo);
+        }
+    }
+
+    public function compara_numero_queima($numero, $premio){//verifica para a modalidade Queima
+        if(isset($this->grupos[$numero])){
+            $grupo = $this->grupos[$numero];
+            $sub = substr($premio, 0, 2);
+            return array_search($sub,$grupo);
+        }
+        return false;
+    }
+
+    public function compara_numeros_dois_premios($numero, $premio1, $premio2, $item){// Verifica passe seco
+        $sorteados = [];
+
+        $item_aposta_id = '';
+        $numero_premio = '1/2';
+        $numero_sorteado = '';
+        $valor = '';
+
+        foreach($numero as $n){
+            if($this->compara_numeros($n,$premio1)){
+                $item_aposta_id = $item->id;
+                $numero_sorteado = (int) $n;
+                $valor = $item->poss_ganho;
+                array_push($sorteados, $n);
+            }
+
+            if($this->compara_numeros($n,$premio2)){
+                array_push($sorteados, $n);
+            }
+        }
+
+        if(count($sorteados) == 2){
+            return [
+                'item_aposta_id' => $item_aposta_id,
+                'numero_premio' => $numero_premio,
+                'numero_sorteado' => $numero_sorteado,
+                'valor' => $valor
+            ];
+        }else{
+            return false;
+        }
+    }
+
+    public function compara_numero_um_eresto($numero, $premio1, $premios, $item){
+        $sorteados = [];
+        $ate = $item->premio_ate;
+
+        foreach($numero as $n){
+            if($this->compara_numeros($n,$premio1)){
+                $sorteados[] = [
+                    'item_aposta_id' => $item->id,
+                    'numero_premio' => 1,
+                    'numero_sorteado' => $n,
+                    'valor' => $item->poss_ganho
+                ];
+            }
+        }
+
+        if(!empty($sorteados)){
+            foreach($numero as $n){
+                for($i = 2; $i <= $ate; $i++){
+                    if(isset($premios[$i])){
+                        if($this->compara_numeros($n,$premios[$i])){
+                            $sorteados[] = [
+                                'item_aposta_id' => $item->id,
+                                'numero_premio' => $i,
+                                'numero_sorteado' => $n,
+                                'valor' => $item->poss_ganho
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $sorteados;
+    }
+
 
     public function setarStatus($id){
         $extracao = Extracao::find($id);
