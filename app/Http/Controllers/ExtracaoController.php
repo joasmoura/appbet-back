@@ -44,6 +44,7 @@ class ExtracaoController extends Controller
         '24' => ['93', '94', '95' ,'96'],
         '25' => ['97', '98', '99' ,'00'],
     ];
+
     public function index(Request $request)
     {
         $extracoes = Extracao::with('horas')->orderBy('created_at','desc')->paginate(10);
@@ -144,7 +145,7 @@ class ExtracaoController extends Controller
     public function store(Request $request)
     {
         $salvo = Extracao::create([
-            'data' => dataParaBanco($request->data),
+            'data' => $request->data,
             'status' => true
         ]);
 
@@ -191,7 +192,7 @@ class ExtracaoController extends Controller
     {
         $extracao = Extracao::with('horas')->find($id);
         if($extracao){
-            $extracao->data = date('d/m/Y',strtotime($extracao->data));
+            $extracao->data = $extracao->data;
             return response()->json([
                 'status' => true,
                 'extracao' => $extracao
@@ -323,7 +324,7 @@ class ExtracaoController extends Controller
                         }
                     }
 
-                    // dd($sorteados);
+                    dd($sorteados);
                     if($aposta_sorteada){
                         $aposta->status = 'ganhou';
                     }else{
