@@ -17,8 +17,8 @@ class CreateSorteadosTable extends Migration
             $table->id();
             $table->unsignedBigInteger('resultado_id');
             $table->unsignedBigInteger('item_aposta_id');
-            $table->integer('numero_premio');
-            $table->integer('numero_sorteado');
+            $table->string('numero_premio');
+            $table->string('numero_sorteado');
             $table->double('valor',10,2);
             $table->timestamps();
 

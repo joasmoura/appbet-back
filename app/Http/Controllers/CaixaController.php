@@ -285,7 +285,6 @@ class CaixaController extends Controller
         $usuario = auth()->user();
         $usuario->load('apostas','movimentacoes');
 
-
         $movimentacoes = $usuario->movimentacoes();
 
         $creditos = $movimentacoes->where(function($query) use($dataInicio, $dataFim) {
