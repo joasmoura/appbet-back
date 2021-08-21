@@ -313,6 +313,13 @@ class ExtracaoController extends Controller
                                     array_push($sorteados, $c);
                                 }
                             }
+                        }elseif((int) $item->modalidade == 17){
+                            $comparacao = $this->compara_numero_grupo_combinado($numero,$premios, $item);
+                            if($comparacao){
+                                foreach($comparacao as $c){
+                                    array_push($sorteados, $c);
+                                }
+                            }
                         }
                     }
 
@@ -435,7 +442,7 @@ class ExtracaoController extends Controller
                             array_push($encontrados, ['premio' => $i, 'sorte' => $n]);
                         }
 
-                        if(count($encontrados) == 2){
+                        if(count($encontrados) == 2){// Caso forem sorteados as duas dezenas encerra as verificações e retorna com os dados
                             array_push($sorteado,[
                                 'item_aposta_id' => $item->id,
                                 'numero_premio' => $encontrados[0]['premio'] . '/'. $encontrados[1]['premio'],
@@ -449,6 +456,44 @@ class ExtracaoController extends Controller
             }
         }
         return $sorteado;
+    }
+
+    public function compara_numero_grupo_combinado($numero, $premios, $item){
+        $encontrados = [];
+        $sorteados = [];
+        $premios_passados = [];
+        foreach($numero as $n){
+            for($i = $item->premio_de; $i <= $item->premio_ate; $i++){
+                if(isset($premios[$i])){
+                    if(isset($this->grupos[$n])){
+                        $gr = $this->grupos[$n];
+                        $premio1 = substr($premios[$i], 0,2);
+                        $premio2 = substr($premios[$i], 2);
+
+                        if(count($encontrados) == 2){
+                            array_push($sorteados, [
+                                'item_aposta_id' => $item->id,
+                                'numero_premio' => $encontrados[0]['premio'] . '/'. $encontrados[1]['premio'],
+                                'numero_sorteado' => $encontrados[0]['sorte'] . ' '. $encontrados[1]['sorte'],
+                                'valor' => $item->poss_ganho
+                            ]);
+                            break;
+                        }
+
+                        if(!in_array($i, $premios_passados)){
+                            if(in_array($premio1,$gr) || in_array($premio2,$gr)){
+                                if(!in_array($n, $encontrados)){
+                                    array_push($premios_passados, $i);
+                                    array_push($encontrados, ['premio' => $i, 'sorte' => $n]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $sorteados;
     }
 
     public function compara_numero_grupo($numero, $premio){

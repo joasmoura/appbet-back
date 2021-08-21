@@ -64,7 +64,7 @@ class CaixaController extends Controller
         if($usuario->perfil == 'supervisor'){
             $usuario->load('movimentacoes','cambistas_gerente');
             $cambistas = $usuario->cambistas_supervisor()->get();
-        }else{
+        }elseif($usuario->perfil == 'gerente'){
             $usuario->load('movimentacoes','cambistas_gerente');
             $cambistas = $usuario->cambistas_gerente()->get();
         }
@@ -277,13 +277,21 @@ class CaixaController extends Controller
     }
 
     public function caixa_cambista(Request $request){
-        $usuario = auth()->user();
 
         $datas = $request->datas;
         $dataInicio = ($datas['dataInicio'] ? date('Y-m-d',strtotime($datas['dataInicio'])) : null);
         $dataFim = ($datas['dataFim'] ? date('Y-m-d',strtotime($datas['dataFim'])) : null);
 
-        $usuario->load('comissao_aposta','apostas','movimentacoes');
+
+        if(auth()->user()->perfil == 'gerente'){
+            $user = auth()->user();
+            $usuario = $user->cambistas_gerente()->with('comissao_aposta','apostas','movimentacoes')->paginate(10);
+        }elseif(auth()->user()->perfil == 'supervisor'){
+            $user = auth()->user();
+            $usuario = $user->cambistas_supervisor()->with('comissao_aposta','apostas','movimentacoes')->paginate(10);
+        }else{
+            $usuario = User::where('perfil','cambista')->with('comissao_aposta','apostas','movimentacoes')->paginate(10);
+        }
 
         $movimentacoes = $usuario->movimentacoes();
 
