@@ -283,7 +283,7 @@ class CaixaController extends Controller
         $dataFim = ($datas['dataFim'] ? date('Y-m-d',strtotime($datas['dataFim'])) : null);
 
         $usuario = auth()->user();
-        $usuario->load('comissao_aposta','apostas','movimentacoes');
+        $usuario->load('apostas','movimentacoes');
 
 
         $movimentacoes = $usuario->movimentacoes();
