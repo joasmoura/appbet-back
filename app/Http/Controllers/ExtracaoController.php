@@ -464,11 +464,7 @@ class ExtracaoController extends Controller
         $sorteados = [];
         $premios_passados = [];
 
-        $novo_numero = [];
-        $novo_numero[] = substr($numero[0], 0,2);
-        $novo_numero[] = substr($numero[0], 2);
-
-        foreach($novo_numero as $n){
+        foreach($numero as $n){
             for($i = $item->premio_de; $i <= $item->premio_ate; $i++){
                 if(isset($premios[$i])){
                     if(isset($this->grupos[$n])){
