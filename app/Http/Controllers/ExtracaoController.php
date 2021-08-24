@@ -324,7 +324,6 @@ class ExtracaoController extends Controller
                         }
                     }
 
-                    dd($sorteados);
                     if($aposta_sorteada){
                         $aposta->status = 'ganhou';
                     }else{
