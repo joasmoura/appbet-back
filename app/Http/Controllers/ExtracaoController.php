@@ -111,7 +111,7 @@ class ExtracaoController extends Controller
                     array_push($idsRegioes, $regiao->id);
                 }
             }
-            $horas = $extracao->horas()->with('regiao')->whereIn('regiao_id',$idsRegioes)->get();
+            $horas = $extracao->horas()->with('regiao')->whereIn('regiao_id',$idsRegioes)->where('hora','>=',date('H:s'))->get();
 
             if($horas->first()){
                 foreach($horas as $key => $hora){
