@@ -494,7 +494,6 @@ class ExtracaoController extends Controller
                 }
             }
         }
-        dd($encontrados);
         return $sorteados;
     }
 
