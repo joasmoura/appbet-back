@@ -207,6 +207,7 @@ class ExtracaoController extends Controller
     public function hora($id)
     {
         $hora = Horarios_Extracao::with('extracao','premios')->find($id);
+        $hora->premios;
         if($hora){
             $hora->extracao->data = date('d/m/Y',strtotime($hora->extracao->data));
             return response()->json([
