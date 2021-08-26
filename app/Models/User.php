@@ -30,7 +30,8 @@ class User extends Authenticatable
         'comissao_id',
         'supervisor_id',
         'gerente_id',
-        'telefone'
+        'telefone',
+        'percentual_premio'
     ];
 
     /**

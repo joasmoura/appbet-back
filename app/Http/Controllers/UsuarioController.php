@@ -66,8 +66,12 @@ class UsuarioController extends Controller
         return $supervisores;
     }
 
-    public function supervisores_select(){
-        $gerentes = User::with('regiao')->where('perfil','supervisor')->get();
+    public function supervisores_select(Request $request){
+        if ($request->gerente){
+            $gerentes = User::with('regiao')->where('perfil','supervisor')->where('gerente_id',$request->gerente)->get();
+        }else{
+            $gerentes = User::with('regiao')->where('perfil','supervisor')->get();
+        }
         return $gerentes;
     }
 
