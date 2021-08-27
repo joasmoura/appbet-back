@@ -96,7 +96,7 @@ class ExtracaoController extends Controller
 
     public function extracoes_cambista(){
         $user = auth()->user();
-        $regioes = $user->regioes()->with('horarios')->get();
+        $regioes = $user->regioes()->get();
 
         $extracao = Extracao::where(function($query){
             $data_atual = date('Y-m-d');
@@ -111,7 +111,10 @@ class ExtracaoController extends Controller
                     array_push($idsRegioes, $regiao->id);
                 }
             }
-            $horas = $extracao->horas()->with('regiao')->whereIn('regiao_id',$idsRegioes)->where('hora','>=',date('H:s'))->get();
+            $horas = $extracao->horas()->with('regiao')->where(function($query) use($idsRegioes) {
+                $query->whereIn('regiao_id',$idsRegioes);
+                $query->where('hora','>=',date('H:s'));
+            })->get();
 
             if($horas->first()){
                 foreach($horas as $key => $hora){
