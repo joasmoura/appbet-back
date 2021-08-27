@@ -169,6 +169,11 @@ class UsuarioController extends Controller
     {
         $user = User::with('regioes')->find($id);
         if($user){
+            if($user->perfil == 'cambista' || $user->perfil == 'supervisor'){
+                $user['gerente'] = $user->gerente()->select('name','id')->first();
+                $user['supervisor'] = $user->supervisor()->select('name','id')->first();
+                $user['comissao'] = $user->comissao()->select('nome','id')->first();
+            }
             return response()->json([
                 'status' => true,
                 'usuario' => $user

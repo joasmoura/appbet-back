@@ -69,6 +69,10 @@ class User extends Authenticatable
         return $this->hasOne(User::class,'id','gerente_id');
     }
 
+    public function supervisor(){
+        return $this->hasOne(User::class,'id','supervisor_id');
+    }
+
     public function apostas(){
         return $this->hasMany(Aposta::class,'user_id','id');
     }
