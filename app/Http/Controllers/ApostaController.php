@@ -36,7 +36,10 @@ class ApostaController extends Controller
 
         if($usuario->perfil == 'gerente'){
             $cambistas = $usuario->cambistas_gerente()->select('id');
-            $apostas = Aposta::with('itens','cambista')->whereIn('user_id',$cambistas)->orderBy('created_at','desc')->paginate(10);
+            $apostas = Aposta::with('itens','cambista')->where(function($query) use($cambistas) {
+                $query->whereIn('user_id',$cambistas);
+            })->orderBy('created_at','desc')->paginate(10);
+
         }elseif($usuario->perfil == 'supervisor'){
             $cambistas = $usuario->cambistas_supervisor()->select('id')->get();
             $apostas = Aposta::with('itens','cambista')->whereIn('user_id',$cambistas)->orderBy('created_at','desc')->paginate(10);

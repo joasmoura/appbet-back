@@ -100,31 +100,37 @@ class ExtracaoController extends Controller
 
         $extracao = Extracao::where(function($query){
             $data_atual = date('Y-m-d');
-            $query->whereDate('data',$data_atual)->get();
+            $query->whereDate('data','>=',$data_atual)->get();
             $query->where('status',true)->get();
-        })->first();
+        })->get();
+
         $idsRegioes = [];
 
-        if($extracao){
+        if($extracao->first()){
             if($regioes->first()){
                 foreach($regioes as $regiao){
                     array_push($idsRegioes, $regiao->id);
                 }
             }
-            $horas = $extracao->horas()->with('regiao')->where(function($query) use($idsRegioes) {
-                $query->whereIn('regiao_id',$idsRegioes);
-                $query->where('hora','>=',date('H:s'));
-            })->get();
+            foreach($extracao as $keye => $ext){
+                $horas = $ext->horas()->with('regiao')->where(function($query) use($idsRegioes, $ext) {
+                    $query->whereIn('regiao_id',$idsRegioes);
+                    if(date('Y-m-d') === $ext->data){
+                        $query->where('hora','>=',date('H:s'));
+                    }
+                })->get();
+                $extracao[$keye]['data'] = date('d/m/Y',strtotime($ext->data));
 
-            if($horas->first()){
-                foreach($horas as $key => $hora){
-                    $reg = $hora->regiao;
-                    if($reg){
-                        $horas[$key]['mercado'] = $reg->mercado;
+                if($horas->first()){
+                    foreach($horas as $key => $hora){
+                        $reg = $hora->regiao;
+                        if($reg){
+                            $horas[$key]['mercado'] = $reg->mercado;
+                        }
                     }
                 }
+                $extracao[$keye]['horas'] = $horas;
             }
-            $extracao->horas = $horas;
 
             return $extracao;
         }
