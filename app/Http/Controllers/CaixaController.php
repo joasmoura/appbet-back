@@ -453,4 +453,47 @@ class CaixaController extends Controller
     {
         //
     }
+
+    public function relatorioApp(Request $request){
+        $datas = $request->datas;
+        $dataInicio = ($datas['dataInicio'] ? date('Y-m-d',strtotime($datas['dataInicio'])) : null);
+        $dataFim = ($datas['dataFim'] ? date('Y-m-d',strtotime($datas['dataFim'])) : null);
+
+        $usuario = auth()->user();
+
+        $movimentacoes = $usuario->movimentacoes()->where(function($query) use($dataInicio, $dataFim){
+            $query->whereDate('data', '>=', $dataInicio);
+            $query->whereDate('data', '<=', $dataFim);
+        })->get();
+
+        $creditos = $movimentacoes->where('tipo','credito')->sum('valor');
+        $retiradas = $movimentacoes->where('tipo','retirada')->sum('valor');
+
+        $apostas = $usuario->apostas()->where(function($query) use($dataInicio, $dataFim) {
+            $query->whereDate('created_at', '>=', $dataInicio);
+            $query->whereDate('created_at', '<=', $dataFim);
+            $query->where('status','!=', 'cancelado');
+        })->with('itens')->get();
+
+        $entradas = $apostas->sum('total');
+
+        $valoresSorteados = 0;
+        $comissoes = 0;
+        if($apostas->first()){
+            foreach($apostas as $aposta){
+                $comissoes += $aposta->comissao_aposta()->sum('valor');
+
+                $itens = $aposta->itens()->get();
+                if($itens->first()){
+                    foreach($itens as $item){
+                        $valoresSorteados += $item->sorteados()->sum('valor');// Soma dos valores dos prêmios do cambista
+                    }
+                }
+            }
+        }
+
+        $saldo = ($entradas+$creditos)-($comissoes+$valoresSorteados+$retiradas);
+
+        return compact('creditos','retiradas','entradas','valoresSorteados','comissoes','saldo');
+    }
 }

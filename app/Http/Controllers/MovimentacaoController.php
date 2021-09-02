@@ -103,7 +103,7 @@ class MovimentacaoController extends Controller
         $movimentacao = Movimentacao::find($id);
 
         if($movimentacao){
-            $movimentacao->user_id = $request->cambista;
+            $movimentacao->user_id = $request->usuario;
             $movimentacao->descricao = $request->descricao;
             $movimentacao->valor = $request->valor;
             $movimentacao->tipo = $request->tipo;
